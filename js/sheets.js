@@ -102,6 +102,21 @@ async function updateMentorCell(rowIndex, colIndex, value) {
   });
 }
 
+// ─── FETCH MENTOR ASSIGNMENTS ─────────────────────────────────────────────────
+async function fetchMentorAssignmentsData() {
+  const range = 'Mentor Assignments!A1:Z';
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}/values/${encodeURIComponent(range)}`;
+  const data = await apiFetch(url);
+  return normalizeValues(data.values || []);
+}
+
+// ─── FETCH MENTOR STATUS ROWS (for card join) ─────────────────────────────────
+async function fetchMentorStatusRows() {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}/values/${encodeURIComponent(MENTOR_RANGE)}`;
+  const data = await apiFetch(url);
+  return normalizeValues(data.values || []);
+}
+
 // ─── COLUMN INDEX TO A1 LETTER ────────────────────────────────────────────────
 function colIndexToLetter(idx) {
   let letter = '';

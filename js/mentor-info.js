@@ -7,14 +7,25 @@ let allMentorCards = [];
 // ─── LOAD DATA ────────────────────────────────────────────────────────────────
 async function loadMentorInfoData() {
   const base = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}/values/`;
-  const engageResp = await apiFetch(base + encodeURIComponent(ENGAGE_SHEET + '!A1:Z'));
+  const [engageResp, statusResp] = await Promise.all([
+    apiFetch(base + encodeURIComponent(ENGAGE_SHEET + '!A1:Z')),
+    fetchMentorStatusRows()
+  ]);
 
-  // Log column headers so we can map them
-  const raw = engageResp.values || [];
-  if (raw.length) console.log('Engage columns:', raw[0]);
+  const engage = normalizeValues(engageResp.values || []);
 
-  const engage = normalizeValues(raw);
-  allMentorCards = engage.rows.map(row => buildMentorObj(row, {}));
+  // Build email → status row lookup
+  const statusByEmail = {};
+  statusResp.rows.forEach(row => {
+    const email = (col(row, EMAIL_KEYS) || '').toLowerCase().trim();
+    if (email) statusByEmail[email] = row;
+  });
+
+  allMentorCards = engage.rows.map(row => {
+    const email = (col(row, EMAIL_KEYS) || '').toLowerCase().trim();
+    const statusRow = statusByEmail[email] || {};
+    return buildMentorObj(row, statusRow);
+  });
 
   renderMentorCards(allMentorCards);
 }
@@ -30,7 +41,9 @@ const NAME_KEYS      = ['name', 'full name', 'mentor name', 'volunteer name'];
 const SKILLS_KEYS      = ['expertise', 'skills', 'skill', 'areas of expertise'];
 const EXPERIENCE_KEYS  = ['experience', 'work experience', 'background', 'years of experience', 'professional experience'];
 const INDUSTRY_KEYS    = ['industries', 'industry', 'industry expertise', 'sectors'];
-const ENGAGE_KEYS    = ['engage', 'engage url', 'engage link', 'profile url', 'profile link', 'url', 'link'];
+const ENGAGE_KEYS       = ['engage', 'engage url', 'engage link', 'profile url', 'profile link', 'url', 'link'];
+const CLIENT_CYCLE_KEYS = ['client cycle', 'cycle', 'client engagement cycle'];
+const ACTIVITY_KEYS     = ['activity', 'client engagement'];
 
 // Case-insensitive column finder
 function col(row, candidates) {
@@ -50,23 +63,25 @@ function parseTags(val) {
 }
 
 // ─── BUILD MENTOR OBJECT ──────────────────────────────────────────────────────
-function buildMentorObj(infoRow, engageRow) {
-  const name      = col(infoRow, NAME_KEYS)     || col(engageRow, NAME_KEYS)     || '';
-  const email     = col(infoRow, EMAIL_KEYS)    || col(engageRow, EMAIL_KEYS)    || '';
-  const altEmail  = col(infoRow, ALT_EMAIL_KEYS)|| col(engageRow, ALT_EMAIL_KEYS)|| '';
-  const phone     = col(infoRow, PHONE_KEYS)    || col(engageRow, PHONE_KEYS)    || '';
-  const bio       = col(infoRow, BIO_KEYS)      || col(engageRow, BIO_KEYS)      || '';
-  const status    = col(infoRow, STATUS_KEYS)   || col(engageRow, STATUS_KEYS)   || '';
-  const role      = col(infoRow, ROLE_KEYS)     || col(engageRow, ROLE_KEYS)     || '';
-  const skills      = parseTags(col(infoRow, SKILLS_KEYS)     || col(engageRow, SKILLS_KEYS)     || '');
-  const experience  = parseTags(col(infoRow, EXPERIENCE_KEYS) || col(engageRow, EXPERIENCE_KEYS) || '');
-  const industries  = parseTags(col(infoRow, INDUSTRY_KEYS)   || col(engageRow, INDUSTRY_KEYS)   || '');
-  const engageUrl = col(engageRow, ENGAGE_KEYS) || col(infoRow, ENGAGE_KEYS)     || '';
+function buildMentorObj(engageRow, statusRow) {
+  const name             = col(engageRow, NAME_KEYS)       || col(statusRow, NAME_KEYS)       || '';
+  const email            = col(engageRow, EMAIL_KEYS)      || col(statusRow, EMAIL_KEYS)      || '';
+  const altEmail         = col(engageRow, ALT_EMAIL_KEYS)  || col(statusRow, ALT_EMAIL_KEYS)  || '';
+  const phone            = col(engageRow, PHONE_KEYS)      || col(statusRow, PHONE_KEYS)      || '';
+  const bio              = col(engageRow, BIO_KEYS)        || col(statusRow, BIO_KEYS)        || '';
+  const role             = col(engageRow, ROLE_KEYS)       || col(statusRow, ROLE_KEYS)       || '';
+  const skills           = parseTags(col(engageRow, SKILLS_KEYS)     || col(statusRow, SKILLS_KEYS)     || '');
+  const experience       = parseTags(col(engageRow, EXPERIENCE_KEYS) || col(statusRow, EXPERIENCE_KEYS) || '');
+  const industries       = parseTags(col(engageRow, INDUSTRY_KEYS)   || col(statusRow, INDUSTRY_KEYS)   || '');
+  const engageUrl        = col(engageRow, ENGAGE_KEYS)     || col(statusRow, ENGAGE_KEYS)     || '';
+  const clientCycle      = col(engageRow, CLIENT_CYCLE_KEYS) || col(statusRow, CLIENT_CYCLE_KEYS) || '';
+  const mentorStatus     = col(statusRow, STATUS_KEYS)     || col(engageRow, STATUS_KEYS)     || '';
+  const clientEngagement = col(statusRow, ACTIVITY_KEYS)   || col(engageRow, ACTIVITY_KEYS)   || '';
 
   // Searchable text blob
   const searchText = [name, bio, ...skills, ...experience, ...industries].join(' ').toLowerCase();
 
-  return { name, email, altEmail, phone, bio, status, role, skills, experience, industries, engageUrl, searchText };
+  return { name, email, altEmail, phone, bio, role, skills, experience, industries, engageUrl, clientCycle, mentorStatus, clientEngagement, searchText };
 }
 
 // ─── RENDER CARDS ─────────────────────────────────────────────────────────────
@@ -176,7 +191,38 @@ function buildCard(m) {
     card.appendChild(tagSection('INDUSTRIES', m.industries, 'mi-tag-industry'));
   }
 
+  // ── Mentor Engage
+  if (m.clientCycle || m.mentorStatus || m.clientEngagement) {
+    const engageSection = document.createElement('div');
+    engageSection.className = 'mi-engage-section';
+
+    const lbl = document.createElement('div');
+    lbl.className = 'mi-tag-label';
+    lbl.textContent = 'MENTOR ENGAGE';
+    engageSection.appendChild(lbl);
+
+    if (m.clientCycle)      engageSection.appendChild(engageItem('Client Cycle', m.clientCycle));
+    if (m.mentorStatus)     engageSection.appendChild(engageItem('Status', m.mentorStatus));
+    if (m.clientEngagement) engageSection.appendChild(engageItem('Client Engagement', m.clientEngagement));
+
+    card.appendChild(engageSection);
+  }
+
   return card;
+}
+
+function engageItem(label, value) {
+  const item = document.createElement('div');
+  item.className = 'mi-engage-item';
+  const lbl = document.createElement('span');
+  lbl.className = 'mi-engage-item-label';
+  lbl.textContent = label + ': ';
+  const val = document.createElement('span');
+  val.className = 'mi-engage-item-value';
+  val.textContent = value;
+  item.appendChild(lbl);
+  item.appendChild(val);
+  return item;
 }
 
 function contactRow(icon, text, href) {

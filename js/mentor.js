@@ -1,6 +1,9 @@
 // Columns displayed as plain text (read-only)
 const MENTOR_READONLY_COLUMNS = ['email', 'name', 'status', 'activity', 'availability'];
 
+// Columns always hidden in Mentor Calendar (moved to Mentor Information cards)
+const MENTOR_FORCE_HIDDEN = ['status', 'activity'];
+
 let mentorHeaders = [];
 let mentorHeaderIndices = {};
 let mentorVisibleCols = [];
@@ -14,7 +17,10 @@ function renderMentorTable(headers, rows, hiddenCols = new Set()) {
   // Visible columns only (preserve original index for write-back)
   mentorVisibleCols = headers
     .map((h, i) => ({ header: h, colIdx: i }))
-    .filter(({ colIdx }) => !hiddenCols.has(colIdx));
+    .filter(({ header, colIdx }) =>
+      !hiddenCols.has(colIdx) &&
+      !MENTOR_FORCE_HIDDEN.includes(header.toLowerCase().trim())
+    );
 
   const table = document.getElementById('mentor-table');
   table.innerHTML = '';

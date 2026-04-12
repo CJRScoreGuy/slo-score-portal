@@ -567,6 +567,30 @@ button {
 .mi-tag-experience  { background: #ede7f6; color: #4527a0; }
 .mi-tag-industry    { background: #fff8e1; color: #e65100; }
 
+/* Mentor Engage section */
+.mi-engage-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+.mi-engage-item {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.mi-engage-item-label {
+  font-weight: 600;
+  color: #5f6368;
+}
+
+.mi-engage-item-value {
+  color: #202124;
+}
+
 /* Loading */
 #mentor-info-loading {
   display: flex;
@@ -656,6 +680,58 @@ button {
   margin: 16px 24px 0;
   font-size: 13px;
 }
+
+/* ─── MENTOR ASSIGNMENTS TABLE ─────────────────────────────────────────────── */
+#ma-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  color: #5f6368;
+}
+
+#ma-table-wrap {
+  flex: 1;
+  overflow: auto;
+  padding: 16px 24px;
+}
+
+#ma-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+#ma-table thead th {
+  background: #1a73e8;
+  color: #fff;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 500;
+  font-size: 16px;
+  white-space: normal;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+#ma-table tbody td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f3f4;
+  vertical-align: top;
+  white-space: nowrap;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#ma-table tbody tr:hover { background: #e8f0fe; }
 
 /* ─── RESPONSIVE ───────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {

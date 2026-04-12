@@ -24,6 +24,7 @@ function onSignedIn(userInfo) {
 let currentTab = 'clients';
 let mentorLoaded = false;
 let mentorInfoLoaded = false;
+let mentorAssignmentsLoaded = false;
 
 function switchTab(tab) {
   currentTab = tab;
@@ -41,6 +42,8 @@ function switchTab(tab) {
     if (!mentorLoaded) loadMentorData();
   } else if (tab === 'mentor-info') {
     if (!mentorInfoLoaded) loadMentorInfoTab();
+  } else if (tab === 'mentor-assignments') {
+    if (!mentorAssignmentsLoaded) loadMentorAssignmentsTab();
   }
 }
 
@@ -53,6 +56,9 @@ function refreshCurrentTab() {
   } else if (currentTab === 'mentor-info') {
     mentorInfoLoaded = false;
     loadMentorInfoTab();
+  } else if (currentTab === 'mentor-assignments') {
+    mentorAssignmentsLoaded = false;
+    loadMentorAssignmentsTab();
   }
 }
 
@@ -119,6 +125,32 @@ async function loadMentorInfoTab() {
     }
     error.classList.remove('hidden');
   } finally {
+    loading.classList.add('hidden');
+  }
+}
+
+// ─── MENTOR ASSIGNMENTS DATA ──────────────────────────────────────────────────
+async function loadMentorAssignmentsTab() {
+  const loading = document.getElementById('ma-loading');
+  const error   = document.getElementById('ma-error');
+  const wrap    = document.getElementById('ma-table-wrap');
+
+  loading.classList.remove('hidden');
+  error.classList.add('hidden');
+  wrap.classList.add('hidden');
+
+  try {
+    await loadMentorAssignmentsData();
+    mentorAssignmentsLoaded = true;
+  } catch (err) {
+    if (err.message === 'SESSION_EXPIRED') {
+      error.textContent = 'Your session expired. Please sign in again.';
+      signOut();
+    } else {
+      error.textContent = `Failed to load mentor assignments: ${err.message}`;
+      console.error(err);
+    }
+    error.classList.remove('hidden');
     loading.classList.add('hidden');
   }
 }
