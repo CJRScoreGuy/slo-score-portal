@@ -7,9 +7,10 @@ let allMentorCards = [];
 // ─── LOAD DATA ────────────────────────────────────────────────────────────────
 async function loadMentorInfoData() {
   const base = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}/values/`;
-  const [engageResp, statusResp] = await Promise.all([
+  const [engageResp, statusResp, assignmentsResp] = await Promise.all([
     apiFetch(base + encodeURIComponent(ENGAGE_SHEET + '!A1:Z')),
-    fetchMentorStatusRows()
+    fetchMentorStatusRows(),
+    fetchMentorAssignmentsData()
   ]);
 
   const engage = normalizeValues(engageResp.values || []);
@@ -21,10 +22,18 @@ async function loadMentorInfoData() {
     if (email) statusByEmail[email] = row;
   });
 
+  // Build email → assignments row lookup
+  const assignmentsByEmail = {};
+  assignmentsResp.rows.forEach(row => {
+    const email = (col(row, EMAIL_KEYS) || '').toLowerCase().trim();
+    if (email) assignmentsByEmail[email] = row;
+  });
+
   allMentorCards = engage.rows.map(row => {
     const email = (col(row, EMAIL_KEYS) || '').toLowerCase().trim();
     const statusRow = statusByEmail[email] || {};
-    return buildMentorObj(row, statusRow);
+    const assignmentsRow = assignmentsByEmail[email] || {};
+    return buildMentorObj(row, statusRow, assignmentsRow);
   });
 
   renderMentorCards(allMentorCards);
@@ -41,9 +50,9 @@ const NAME_KEYS      = ['name', 'full name', 'mentor name', 'volunteer name'];
 const SKILLS_KEYS      = ['expertise', 'skills', 'skill', 'areas of expertise'];
 const EXPERIENCE_KEYS  = ['experience', 'work experience', 'background', 'years of experience', 'professional experience'];
 const INDUSTRY_KEYS    = ['industries', 'industry', 'industry expertise', 'sectors'];
-const ENGAGE_KEYS       = ['engage', 'engage url', 'engage link', 'profile url', 'profile link', 'url', 'link'];
-const CLIENT_CYCLE_KEYS = ['client cycle', 'cycle', 'client engagement cycle'];
-const ACTIVITY_KEYS     = ['activity', 'client engagement'];
+const ENGAGE_KEYS        = ['engage', 'engage url', 'engage link', 'profile url', 'profile link', 'url', 'link'];
+const MENTOR_RESET_KEYS  = ['mentor reset', 'reset'];
+const ACTIVITY_KEYS      = ['activity', 'client engagement'];
 
 // Case-insensitive column finder
 function col(row, candidates) {
@@ -63,7 +72,7 @@ function parseTags(val) {
 }
 
 // ─── BUILD MENTOR OBJECT ──────────────────────────────────────────────────────
-function buildMentorObj(engageRow, statusRow) {
+function buildMentorObj(engageRow, statusRow, assignmentsRow) {
   const name             = col(engageRow, NAME_KEYS)       || col(statusRow, NAME_KEYS)       || '';
   const email            = col(engageRow, EMAIL_KEYS)      || col(statusRow, EMAIL_KEYS)      || '';
   const altEmail         = col(engageRow, ALT_EMAIL_KEYS)  || col(statusRow, ALT_EMAIL_KEYS)  || '';
@@ -74,7 +83,7 @@ function buildMentorObj(engageRow, statusRow) {
   const experience       = parseTags(col(engageRow, EXPERIENCE_KEYS) || col(statusRow, EXPERIENCE_KEYS) || '');
   const industries       = parseTags(col(engageRow, INDUSTRY_KEYS)   || col(statusRow, INDUSTRY_KEYS)   || '');
   const engageUrl        = col(engageRow, ENGAGE_KEYS)     || col(statusRow, ENGAGE_KEYS)     || '';
-  const clientCycle      = col(engageRow, CLIENT_CYCLE_KEYS) || col(statusRow, CLIENT_CYCLE_KEYS) || '';
+  const clientCycle      = col(assignmentsRow, MENTOR_RESET_KEYS) || '';
   const mentorStatus     = col(statusRow, STATUS_KEYS)     || col(engageRow, STATUS_KEYS)     || '';
   const clientEngagement = col(statusRow, ACTIVITY_KEYS)   || col(engageRow, ACTIVITY_KEYS)   || '';
 
@@ -176,22 +185,7 @@ function buildCard(m) {
 
   card.appendChild(contact);
 
-  // ── Expertise
-  if (m.skills.length) {
-    card.appendChild(tagSection('EXPERTISE', m.skills, 'mi-tag-skill'));
-  }
-
-  // ── Experience
-  if (m.experience.length) {
-    card.appendChild(tagSection('EXPERIENCE', m.experience, 'mi-tag-experience'));
-  }
-
-  // ── Industries
-  if (m.industries.length) {
-    card.appendChild(tagSection('INDUSTRIES', m.industries, 'mi-tag-industry'));
-  }
-
-  // ── Mentor Engage
+  // ── Mentor Engage (under contact info)
   if (m.clientCycle || m.mentorStatus || m.clientEngagement) {
     const engageSection = document.createElement('div');
     engageSection.className = 'mi-engage-section';
@@ -206,6 +200,21 @@ function buildCard(m) {
     if (m.clientEngagement) engageSection.appendChild(engageItem('Client Engagement', m.clientEngagement));
 
     card.appendChild(engageSection);
+  }
+
+  // ── Expertise
+  if (m.skills.length) {
+    card.appendChild(tagSection('EXPERTISE', m.skills, 'mi-tag-skill'));
+  }
+
+  // ── Experience
+  if (m.experience.length) {
+    card.appendChild(tagSection('EXPERIENCE', m.experience, 'mi-tag-experience'));
+  }
+
+  // ── Industries
+  if (m.industries.length) {
+    card.appendChild(tagSection('INDUSTRIES', m.industries, 'mi-tag-industry'));
   }
 
   return card;
