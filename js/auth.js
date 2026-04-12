@@ -28,7 +28,7 @@ function initAuth(signedInCallback) {
 
 // ─── SIGN IN ──────────────────────────────────────────────────────────────────
 function signIn() {
-  tokenClient.requestAccessToken({ prompt: 'consent' });
+  tokenClient.requestAccessToken({ prompt: '' });
 }
 
 // ─── SIGN OUT ─────────────────────────────────────────────────────────────────
