@@ -33,10 +33,7 @@ function signIn() {
 
 // ─── SIGN OUT ─────────────────────────────────────────────────────────────────
 function signOut() {
-  if (accessToken) {
-    google.accounts.oauth2.revoke(accessToken, () => {});
-    accessToken = null;
-  }
+  accessToken = null;
   showLoginScreen();
 }
 
