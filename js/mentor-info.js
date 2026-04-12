@@ -88,7 +88,7 @@ function buildMentorObj(engageRow, statusRow, assignmentsRow) {
   const clientEngagement = col(statusRow, ACTIVITY_KEYS)   || col(engageRow, ACTIVITY_KEYS)   || '';
 
   // Searchable text blob
-  const searchText = [name, bio, ...skills, ...experience, ...industries].join(' ').toLowerCase();
+  const searchText = [name, bio, ...skills, ...experience, ...industries, clientCycle, mentorStatus, clientEngagement].join(' ').toLowerCase();
 
   return { name, email, altEmail, phone, bio, role, skills, experience, industries, engageUrl, clientCycle, mentorStatus, clientEngagement, searchText };
 }
