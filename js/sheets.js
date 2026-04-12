@@ -8,7 +8,7 @@ const RANGE = `${SHEET_NAME}!A1:Z`;
 // (may be the same as SPREADSHEET_ID if it's a tab in the same file)
 const MENTOR_SPREADSHEET_ID = '1E2RtxWQJZrxIREhDwt_uxOpINN4GARh487OCSGqHNpw';
 const MENTOR_SHEET_NAME = 'Mentor Status';
-const MENTOR_RANGE = `${MENTOR_SHEET_NAME}!A1:Z`;
+const MENTOR_RANGE = `${MENTOR_SHEET_NAME}!A1:BE`;
 
 // ─── SHARED FETCH HELPER ─────────────────────────────────────────────────────
 async function apiFetch(url, options = {}) {
@@ -59,7 +59,7 @@ async function fetchSheetData() {
 async function fetchMentorData() {
   // Fetch column visibility metadata and values in parallel
   const metaUrl = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}`
-    + `?includeGridData=true&ranges=${encodeURIComponent(MENTOR_SHEET_NAME + '!A1:Z1')}`
+    + `?includeGridData=true&ranges=${encodeURIComponent(MENTOR_SHEET_NAME + '!A1:BE1')}`
     + `&fields=sheets(properties.title,data.columnMetadata)`;
 
   const valuesUrl = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}/values/${encodeURIComponent(MENTOR_RANGE)}`;
