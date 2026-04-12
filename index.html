@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SLO SCORE Volunteer Portal</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ── HEADER ──────────────────────────────────────────────────────────── -->
+  <header>
+    <div class="header-left" style="display:flex;flex-direction:row;align-items:center;gap:12px;">
+      <img src="images/SCORE_Logo_94x40.png" alt="SCORE Logo" class="header-logo" />
+      <h1>SLO SCORE Volunteer Portal</h1>
+    </div>
+    <div class="header-right" id="app-header-controls" style="display:none">
+      <span id="user-email"></span>
+      <button id="refresh-btn">Refresh</button>
+      <button id="signout-btn">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- ── LOGIN SCREEN ────────────────────────────────────────────────────── -->
+  <div id="login-screen">
+    <div class="login-card">
+      <img src="images/SCORE_Logo_94x40.png" alt="SCORE Logo" class="login-logo" />
+      <h2>SLO SCORE Volunteer Portal</h2>
+      <p>Sign in with your <strong>@scorevolunteer.org</strong> Google account to access client data.</p>
+      <button id="signin-btn">Sign in with Google</button>
+    </div>
+    <div id="auth-error" class="hidden"></div>
+  </div>
+
+  <!-- ── APP SCREEN ──────────────────────────────────────────────────────── -->
+  <div id="app-screen" class="hidden">
+
+    <!-- Tab bar -->
+    <nav class="tab-bar">
+      <button class="tab-btn active" data-tab="clients">SCORE Clients</button>
+      <button class="tab-btn" data-tab="mentor-calendar">Mentor Calendar</button>
+      <button class="tab-btn" data-tab="mentor-info">Mentor Information</button>
+    </nav>
+
+    <!-- ── TAB: SCORE CLIENTS ─────────────────────────────────────────── -->
+    <div class="tab-panel" data-tab="clients">
+
+      <div class="toolbar">
+        <div id="filter-bar"></div>
+      </div>
+
+      <div id="data-error" class="hidden"></div>
+
+      <div id="loading" class="hidden">
+        <div class="spinner"></div>
+        <span>Loading client data…</span>
+      </div>
+
+      <div id="table-wrap" class="hidden">
+        <div class="table-meta">
+          <span id="row-count"></span>
+        </div>
+        <table id="data-table"></table>
+      </div>
+
+    </div>
+
+    <!-- ── TAB: MENTOR INFORMATION ───────────────────────────────────── -->
+    <div class="tab-panel hidden" data-tab="mentor-info">
+
+      <!-- Search bar -->
+      <div class="mi-search-wrap">
+        <span class="mi-search-icon">🔍</span>
+        <input type="text" id="mentor-info-search"
+          placeholder="Start typing a name or text from the mentor bios to search"
+          class="mi-search-input" />
+      </div>
+
+      <div class="mi-toolbar">
+        <span id="mentor-info-count" class="mi-count"></span>
+      </div>
+
+      <div id="mentor-info-error" class="hidden data-error-msg"></div>
+
+      <div id="mentor-info-loading" class="hidden">
+        <div class="spinner"></div>
+        <span>Loading mentor information…</span>
+      </div>
+
+      <div id="mentor-info-grid" class="mi-grid"></div>
+
+    </div>
+
+    <!-- ── TAB: MENTOR CALENDAR ───────────────────────────────────────── -->
+    <div class="tab-panel hidden" data-tab="mentor-calendar">
+
+      <div id="mentor-error" class="hidden data-error-msg"></div>
+
+      <div id="mentor-loading">
+        <div class="spinner"></div>
+        <span>Loading mentor data…</span>
+      </div>
+
+      <div id="mentor-table-wrap" class="hidden">
+        <table id="mentor-table"></table>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ── SCRIPTS ─────────────────────────────────────────────────────────── -->
+  <script src="js/auth.js"></script>
+  <script src="js/sheets.js"></script>
+  <script src="js/table.js"></script>
+  <script src="js/mentor.js"></script>
+  <script src="js/mentor-info.js"></script>
+  <script src="js/app.js"></script>
+  <script src="https://accounts.google.com/gsi/client" onload="initApp()" async defer></script>
+
+  <script>
+    // Show header controls once app screen is visible
+    const appScreen = document.getElementById('app-screen');
+    const headerControls = document.getElementById('app-header-controls');
+    const observer = new MutationObserver(() => {
+      headerControls.style.display = appScreen.classList.contains('hidden') ? 'none' : 'flex';
+    });
+    observer.observe(appScreen, { attributes: true, attributeFilter: ['class'] });
+  </script>
+
+</body>
+</html>
