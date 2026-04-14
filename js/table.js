@@ -164,7 +164,7 @@ function renderRows(rows) {
             td.classList.add('has-reset-btn');
             const resetBtn = document.createElement('button');
             resetBtn.className = 'reset-client-btn';
-            resetBtn.textContent = 'Reset';
+            resetBtn.textContent = 'New Mentor';
             resetBtn.addEventListener('click', () => onResetClient(row, resetBtn));
             td.appendChild(resetBtn);
           }
@@ -247,7 +247,7 @@ async function onResetClient(row, btn) {
   } catch (err) {
     console.error('Reset failed:', err);
     btn.disabled = false;
-    btn.textContent = 'Reset';
+    btn.textContent = 'New Mentor';
     alert(`Reset failed: ${err.message}`);
   }
 }
