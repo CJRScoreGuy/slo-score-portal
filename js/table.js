@@ -154,8 +154,21 @@ function renderRows(rows) {
       allHeaders.forEach(header => {
         const td = document.createElement('td');
         const value = row[header] || '';
+        const headerNorm = header.toLowerCase().trim();
 
-        if (EXPANDABLE_COLUMNS.includes(header.toLowerCase().trim()) && value.length > 0) {
+        if (headerNorm === 'name') {
+          td.textContent = value;
+          const mentor1Header = allHeaders.find(h => h.toLowerCase().trim() === 'mentor 1');
+          const mentor1Val = mentor1Header ? (row[mentor1Header] || '').trim() : '';
+          if (mentor1Val) {
+            td.classList.add('has-reset-btn');
+            const resetBtn = document.createElement('button');
+            resetBtn.className = 'reset-client-btn';
+            resetBtn.textContent = 'Reset';
+            resetBtn.addEventListener('click', () => onResetClient(row, resetBtn));
+            td.appendChild(resetBtn);
+          }
+        } else if (EXPANDABLE_COLUMNS.includes(headerNorm) && value.length > 0) {
           td.classList.add('cell-expandable');
 
           const textSpan = document.createElement('span');
@@ -181,6 +194,62 @@ function renderRows(rows) {
     });
   }
   table.appendChild(tbody);
+}
+
+// ─── RESET CLIENT ─────────────────────────────────────────────────────────────
+async function onResetClient(row, btn) {
+  const mentor1Header = allHeaders.find(h => h.toLowerCase().trim() === 'mentor 1');
+  const mentor1Name = mentor1Header ? (row[mentor1Header] || '').trim() : '';
+  if (!mentor1Name) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Resetting…';
+
+  try {
+    // Fetch Mentor Assignments worksheet
+    const { headers: maHeaders, rows: maRows } = await fetchMentorAssignmentsData();
+
+    // Locate required columns (case-insensitive)
+    const findCol = name => maHeaders.findIndex(h => h.toLowerCase().trim() === name.toLowerCase());
+    const nameColIdx        = findCol('name');
+    const assignmentsColIdx = findCol('assignments');
+    const mentorAssignedIdx = findCol('mentor assigned');
+
+    if (nameColIdx < 0)        throw new Error('Column "Name" not found in Mentor Assignments');
+    if (assignmentsColIdx < 0) throw new Error('Column "Assignments" not found in Mentor Assignments');
+    if (mentorAssignedIdx < 0) throw new Error('Column "Mentor Assigned" not found in Mentor Assignments');
+
+    // Find the mentor row matching Mentor 1 name
+    const nameHeader = maHeaders[nameColIdx];
+    const maRow = maRows.find(r => (r[nameHeader] || '').toLowerCase().trim() === mentor1Name.toLowerCase());
+    if (!maRow) throw new Error(`Mentor "${mentor1Name}" not found in Mentor Assignments`);
+
+    // Subtract 1 from Assignments (min 0)
+    const assignmentsHeader = maHeaders[assignmentsColIdx];
+    const currentVal = parseInt(maRow[assignmentsHeader], 10) || 0;
+    await updateMentorAssignmentsCell(maRow._rowIndex, colIndexToLetter(assignmentsColIdx), Math.max(0, currentVal - 1));
+
+    // Set Mentor Assigned to 0
+    await updateMentorAssignmentsCell(maRow._rowIndex, colIndexToLetter(mentorAssignedIdx), 0);
+
+    // Clear Mentor 1–5 in Client Tracking
+    await clearClientMentorColumns(row._rowIndex, allHeaders);
+
+    // Update local row data so re-renders don't show stale values
+    ['Mentor 1', 'Mentor 2', 'Mentor 3', 'Mentor 4', 'Mentor 5'].forEach(colName => {
+      const h = allHeaders.find(h => h.toLowerCase().trim() === colName.toLowerCase());
+      if (h) row[h] = '';
+    });
+
+    // Remove the Reset button
+    btn.remove();
+
+  } catch (err) {
+    console.error('Reset failed:', err);
+    btn.disabled = false;
+    btn.textContent = 'Reset';
+    alert(`Reset failed: ${err.message}`);
+  }
 }
 
 // ─── ROW COUNT ────────────────────────────────────────────────────────────────

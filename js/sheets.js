@@ -110,6 +110,40 @@ async function fetchMentorAssignmentsData() {
   return normalizeValues(data.values || []);
 }
 
+// ─── WRITE MENTOR ASSIGNMENTS CELL ───────────────────────────────────────────
+async function updateMentorAssignmentsCell(rowIndex, colLetter, value) {
+  const sheetRow = rowIndex + 2;
+  const range = encodeURIComponent(`Mentor Assignments!${colLetter}${sheetRow}`);
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}/values/${range}?valueInputOption=RAW`;
+  await apiFetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ values: [[value]] })
+  });
+}
+
+// ─── CLEAR MENTOR 1-5 COLUMNS IN CLIENT TRACKING ─────────────────────────────
+async function clearClientMentorColumns(clientRowIndex, headers) {
+  const sheetRow = clientRowIndex + 2;
+  const mentorColNames = ['Mentor 1', 'Mentor 2', 'Mentor 3', 'Mentor 4', 'Mentor 5'];
+  const ranges = mentorColNames
+    .map(name => {
+      const idx = headers.findIndex(h => h.toLowerCase().trim() === name.toLowerCase());
+      return idx >= 0 ? `${SHEET_NAME}!${colIndexToLetter(idx)}${sheetRow}` : null;
+    })
+    .filter(Boolean);
+
+  if (!ranges.length) return;
+  await apiFetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values:batchClear`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ranges })
+    }
+  );
+}
+
 // ─── FETCH MENTOR STATUS ROWS (for card join) ─────────────────────────────────
 async function fetchMentorStatusRows() {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}/values/${encodeURIComponent(MENTOR_RANGE)}`;
