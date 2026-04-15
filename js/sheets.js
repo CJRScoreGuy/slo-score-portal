@@ -152,7 +152,7 @@ async function fetchMentorStatusRows() {
 }
 
 // ─── APPS SCRIPT ──────────────────────────────────────────────────────────────
-const APPS_SCRIPT_ID = 'YOUR_SCRIPT_ID_HERE'; // Replace with your Apps Script script ID
+const APPS_SCRIPT_ID = '145bGuPvSlqzqAn4UWdpxTGmM3OZQo4X40bWtZgpNC1C6vxbTaWIOo12j';
 
 async function runGetMentorScript(clientSheetRow) {
   const url = `https://script.googleapis.com/v1/scripts/${APPS_SCRIPT_ID}:run`;
