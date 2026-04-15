@@ -285,8 +285,6 @@ button {
   border-collapse: collapse;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0,0,0,.1);
-  border-radius: 6px;
-  overflow: hidden;
   font-size: 13px;
 }
 
@@ -302,6 +300,9 @@ button {
   top: 0;
   z-index: 10;
 }
+
+#data-table thead th:first-child { border-radius: 6px 0 0 0; }
+#data-table thead th:last-child  { border-radius: 0 6px 0 0; }
 
 #data-table tbody td {
   padding: 8px 12px;
@@ -419,6 +420,15 @@ button {
 
 /* ─── MENTOR INFORMATION TAB ───────────────────────────────────────────────── */
 
+/* Sticky search header */
+.mi-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #f8f9fa;
+  padding-top: 16px;
+}
+
 /* Search bar */
 .mi-search-wrap {
   display: flex;
@@ -428,7 +438,7 @@ button {
   border: 1px solid #dadce0;
   border-radius: 6px;
   padding: 13px 20px;
-  margin: 20px 24px 0;
+  margin: 0 24px;
   box-shadow: 0 1px 4px rgba(0,0,0,.06);
 }
 
@@ -654,10 +664,11 @@ button {
   border-collapse: collapse;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0,0,0,.1);
-  border-radius: 6px;
-  overflow: hidden;
   font-size: 13px;
 }
+
+#mentor-table thead th:first-child { border-radius: 6px 0 0 0; }
+#mentor-table thead th:last-child  { border-radius: 0 6px 0 0; }
 
 #mentor-table thead th {
   background: #1a73e8;

@@ -68,16 +68,17 @@
     <!-- ── TAB: MENTOR INFORMATION ───────────────────────────────────── -->
     <div class="tab-panel hidden" data-tab="mentor-info">
 
-      <!-- Search bar -->
-      <div class="mi-search-wrap">
-        <span class="mi-search-icon">🔍</span>
-        <input type="text" id="mentor-info-search"
-          placeholder="Start typing a name or text from the mentor bios to search"
-          class="mi-search-input" />
-      </div>
-
-      <div class="mi-toolbar">
-        <span id="mentor-info-count" class="mi-count"></span>
+      <!-- Sticky search header -->
+      <div class="mi-sticky-header">
+        <div class="mi-search-wrap">
+          <span class="mi-search-icon">🔍</span>
+          <input type="text" id="mentor-info-search"
+            placeholder="Start typing a name or text from the mentor bios to search"
+            class="mi-search-input" />
+        </div>
+        <div class="mi-toolbar">
+          <span id="mentor-info-count" class="mi-count"></span>
+        </div>
       </div>
 
       <div id="mentor-info-error" class="hidden data-error-msg"></div>
