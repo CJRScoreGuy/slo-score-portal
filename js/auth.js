@@ -6,7 +6,8 @@ const ALLOWED_DOMAIN = 'scorevolunteer.org';
 const SCOPES = [
   'email',
   'profile',
-  'https://www.googleapis.com/auth/spreadsheets'
+  'https://www.googleapis.com/auth/spreadsheets',
+  'https://www.googleapis.com/auth/script.projects'
 ].join(' ');
 
 // ─── STATE ────────────────────────────────────────────────────────────────────

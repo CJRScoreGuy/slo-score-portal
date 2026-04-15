@@ -158,8 +158,11 @@ function renderRows(rows) {
 
         if (headerNorm === 'name') {
           td.textContent = value;
-          const mentor1Header = allHeaders.find(h => h.toLowerCase().trim() === 'mentor 1');
-          const mentor1Val = mentor1Header ? (row[mentor1Header] || '').trim() : '';
+          const mentor1Header    = allHeaders.find(h => h.toLowerCase().trim() === 'mentor 1');
+          const needMentorHeader = allHeaders.find(h => h.toLowerCase().trim() === 'need mentor');
+          const mentor1Val    = mentor1Header    ? (row[mentor1Header]    || '').trim() : '';
+          const needMentorVal = needMentorHeader ? (row[needMentorHeader] || '').trim().toUpperCase() : '';
+
           if (mentor1Val) {
             td.classList.add('has-reset-btn');
             const resetBtn = document.createElement('button');
@@ -167,6 +170,13 @@ function renderRows(rows) {
             resetBtn.textContent = 'New Mentor';
             resetBtn.addEventListener('click', () => onResetClient(row, resetBtn));
             td.appendChild(resetBtn);
+          } else if (needMentorVal === 'YES') {
+            td.classList.add('has-reset-btn');
+            const getMentorBtn = document.createElement('button');
+            getMentorBtn.className = 'get-mentor-btn';
+            getMentorBtn.textContent = 'Get Mentor';
+            getMentorBtn.addEventListener('click', () => onGetMentor(row, getMentorBtn, td));
+            td.appendChild(getMentorBtn);
           }
         } else if (EXPANDABLE_COLUMNS.includes(headerNorm) && value.length > 0) {
           td.classList.add('cell-expandable');
@@ -194,6 +204,43 @@ function renderRows(rows) {
     });
   }
   table.appendChild(tbody);
+}
+
+// ─── GET MENTOR ───────────────────────────────────────────────────────────────
+async function onGetMentor(row, btn, td) {
+  btn.disabled = true;
+  btn.textContent = 'Getting a mentor';
+  btn.classList.add('flashing');
+
+  try {
+    const clientSheetRow = row._rowIndex + 2; // 1-based sheet row number
+    const result = await runGetMentorScript(clientSheetRow);
+
+    // Check for API-level error
+    if (result.error) {
+      const errMsg = result.error.details?.[0]?.errorMessage
+        || result.error.message
+        || 'Script error';
+      throw new Error(errMsg);
+    }
+
+    // Check for script-returned error string
+    const scriptResult = result.response?.result;
+    if (typeof scriptResult === 'string' && scriptResult.toLowerCase().startsWith('error')) {
+      throw new Error(scriptResult);
+    }
+
+    // Success — refresh the table to show updated mentor columns
+    await loadClientData();
+
+  } catch (err) {
+    console.error('[GetMentor] Failed:', err);
+    btn.classList.remove('flashing');
+    const errSpan = document.createElement('span');
+    errSpan.className = 'get-mentor-error';
+    errSpan.textContent = err.message;
+    td.replaceChild(errSpan, btn);
+  }
 }
 
 // ─── RESET CLIENT ─────────────────────────────────────────────────────────────

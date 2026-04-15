@@ -151,6 +151,22 @@ async function fetchMentorStatusRows() {
   return normalizeValues(data.values || []);
 }
 
+// ─── APPS SCRIPT ──────────────────────────────────────────────────────────────
+const APPS_SCRIPT_ID = 'YOUR_SCRIPT_ID_HERE'; // Replace with your Apps Script script ID
+
+async function runGetMentorScript(clientSheetRow) {
+  const url = `https://script.googleapis.com/v1/scripts/${APPS_SCRIPT_ID}:run`;
+  return await apiFetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      function: 'getMentorForClient',
+      parameters: [clientSheetRow],
+      devMode: false
+    })
+  });
+}
+
 // ─── COLUMN INDEX TO A1 LETTER ────────────────────────────────────────────────
 function colIndexToLetter(idx) {
   let letter = '';
