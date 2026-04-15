@@ -213,8 +213,10 @@ async function onGetMentor(row, btn, td) {
   btn.classList.add('flashing');
 
   try {
-    const clientSheetRow = row._rowIndex + 2; // 1-based sheet row number
-    const result = await runGetMentorScript(clientSheetRow);
+    const emailHeader = allHeaders.find(h => h.toLowerCase().trim() === 'email');
+    const clientEmail = emailHeader ? (row[emailHeader] || '').trim() : '';
+    if (!clientEmail) throw new Error('No email address found for this client row');
+    const result = await runGetMentorScript(clientEmail);
 
     // Check for API-level error
     if (result.error) {

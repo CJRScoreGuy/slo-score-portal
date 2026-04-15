@@ -154,14 +154,14 @@ async function fetchMentorStatusRows() {
 // ─── APPS SCRIPT ──────────────────────────────────────────────────────────────
 const APPS_SCRIPT_ID = 'AKfycbzFW55wo6_mlmrOoAycBR6A474NPDgBb_TfFFVz-eIqchbI1NR3yEg0URPcXJKKofE';
 
-async function runGetMentorScript(clientSheetRow) {
+async function runGetMentorScript(clientEmail) {
   const url = `https://script.googleapis.com/v1/scripts/${APPS_SCRIPT_ID}:run`;
   return await apiFetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       function: 'getMentorForClient',
-      parameters: [clientSheetRow],
+      parameters: [clientEmail],
       devMode: false
     })
   });
