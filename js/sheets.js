@@ -152,7 +152,7 @@ async function fetchMentorStatusRows() {
 }
 
 // ─── APPS SCRIPT ──────────────────────────────────────────────────────────────
-const APPS_SCRIPT_ID = '145bGuPvSlqzqAn4UWdpxTGmM3OZQo4X40bWtZgpNC1C6vxbTaWIOo12j';
+const APPS_SCRIPT_ID = 'AKfycbzFW55wo6_mlmrOoAycBR6A474NPDgBb_TfFFVz-eIqchbI1NR3yEg0URPcXJKKofE';
 
 async function runGetMentorScript(clientSheetRow) {
   const url = `https://script.googleapis.com/v1/scripts/${APPS_SCRIPT_ID}:run`;
