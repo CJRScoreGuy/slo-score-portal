@@ -206,33 +206,42 @@ async function onResetClient(row, btn) {
   btn.textContent = 'Resetting…';
 
   try {
-    // Fetch Mentor Assignments worksheet
+    // Step 1: Fetch Mentor Assignments worksheet
+    console.log('[NewMentor] Fetching Mentor Assignments…');
     const { headers: maHeaders, rows: maRows } = await fetchMentorAssignmentsData();
+    console.log('[NewMentor] Mentor Assignments columns:', maHeaders);
 
-    // Locate required columns (case-insensitive)
+    // Step 2: Locate required columns (case-insensitive)
     const findCol = name => maHeaders.findIndex(h => h.toLowerCase().trim() === name.toLowerCase());
     const nameColIdx        = findCol('name');
     const assignmentsColIdx = findCol('assignments');
     const mentorAssignedIdx = findCol('mentor assigned');
 
-    if (nameColIdx < 0)        throw new Error('Column "Name" not found in Mentor Assignments');
-    if (assignmentsColIdx < 0) throw new Error('Column "Assignments" not found in Mentor Assignments');
-    if (mentorAssignedIdx < 0) throw new Error('Column "Mentor Assigned" not found in Mentor Assignments');
+    console.log('[NewMentor] Column indices — name:', nameColIdx, 'assignments:', assignmentsColIdx, 'mentor assigned:', mentorAssignedIdx);
 
-    // Find the mentor row matching Mentor 1 name
+    if (nameColIdx < 0)        throw new Error(`Column "Name" not found. Available: ${maHeaders.join(', ')}`);
+    if (assignmentsColIdx < 0) throw new Error(`Column "Assignments" not found. Available: ${maHeaders.join(', ')}`);
+    if (mentorAssignedIdx < 0) throw new Error(`Column "Mentor Assigned" not found. Available: ${maHeaders.join(', ')}`);
+
+    // Step 3: Find the mentor row matching Mentor 1 name
     const nameHeader = maHeaders[nameColIdx];
     const maRow = maRows.find(r => (r[nameHeader] || '').toLowerCase().trim() === mentor1Name.toLowerCase());
+    console.log('[NewMentor] Looking for mentor:', mentor1Name, '— found:', !!maRow);
     if (!maRow) throw new Error(`Mentor "${mentor1Name}" not found in Mentor Assignments`);
 
-    // Subtract 1 from Assignments (min 0)
+    // Step 4: Subtract 1 from Assignments (min 0)
     const assignmentsHeader = maHeaders[assignmentsColIdx];
     const currentVal = parseInt(maRow[assignmentsHeader], 10) || 0;
-    await updateMentorAssignmentsCell(maRow._rowIndex, colIndexToLetter(assignmentsColIdx), Math.max(0, currentVal - 1));
+    const newVal = Math.max(0, currentVal - 1);
+    console.log('[NewMentor] Updating Assignments:', currentVal, '→', newVal);
+    await updateMentorAssignmentsCell(maRow._rowIndex, colIndexToLetter(assignmentsColIdx), newVal);
 
-    // Set Mentor Assigned to 0
+    // Step 5: Set Mentor Assigned to 0
+    console.log('[NewMentor] Setting Mentor Assigned to 0');
     await updateMentorAssignmentsCell(maRow._rowIndex, colIndexToLetter(mentorAssignedIdx), 0);
 
-    // Clear Mentor 1–5 in Client Tracking
+    // Step 6: Clear Mentor 1–5 in Client Tracking
+    console.log('[NewMentor] Clearing Mentor 1-5 in Client Tracking');
     await clearClientMentorColumns(row._rowIndex, allHeaders);
 
     // Update local row data so re-renders don't show stale values
@@ -241,14 +250,14 @@ async function onResetClient(row, btn) {
       if (h) row[h] = '';
     });
 
-    // Remove the Reset button
+    console.log('[NewMentor] Complete.');
     btn.remove();
 
   } catch (err) {
-    console.error('Reset failed:', err);
+    console.error('[NewMentor] Failed:', err);
     btn.disabled = false;
     btn.textContent = 'New Mentor';
-    alert(`Reset failed: ${err.message}`);
+    showClientError(`New Mentor failed: ${err.message}`);
   }
 }
 
