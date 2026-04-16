@@ -122,6 +122,59 @@ function applyFilters() {
 }
 
 // ─── TABLE RENDER ─────────────────────────────────────────────────────────────
+function buildTrCells(tr, row) {
+  tr.innerHTML = '';
+  allHeaders.forEach(header => {
+    const td = document.createElement('td');
+    const value = row[header] || '';
+    const headerNorm = header.toLowerCase().trim();
+
+    if (headerNorm === 'name') {
+      td.textContent = value;
+      const mentor1Header    = allHeaders.find(h => h.toLowerCase().trim() === 'mentor 1');
+      const needMentorHeader = allHeaders.find(h => h.toLowerCase().trim() === 'need mentor');
+      const mentor1Val    = mentor1Header    ? (row[mentor1Header]    || '').trim() : '';
+      const needMentorVal = needMentorHeader ? (row[needMentorHeader] || '').trim().toUpperCase() : '';
+
+      if (mentor1Val) {
+        td.classList.add('has-reset-btn');
+        const resetBtn = document.createElement('button');
+        resetBtn.className = 'reset-client-btn';
+        resetBtn.textContent = 'Reset Mentor';
+        resetBtn.addEventListener('click', () => onResetClient(row, resetBtn));
+        td.appendChild(resetBtn);
+      } else if (needMentorVal === 'YES') {
+        td.classList.add('has-reset-btn');
+        const getMentorBtn = document.createElement('button');
+        getMentorBtn.className = 'get-mentor-btn';
+        getMentorBtn.textContent = 'Get Mentor';
+        getMentorBtn.addEventListener('click', () => onGetMentor(row, getMentorBtn, td));
+        td.appendChild(getMentorBtn);
+      }
+    } else if (EXPANDABLE_COLUMNS.includes(headerNorm) && value.length > 0) {
+      td.classList.add('cell-expandable');
+
+      const textSpan = document.createElement('span');
+      textSpan.className = 'cell-text';
+      textSpan.textContent = value;
+      td.appendChild(textSpan);
+
+      const btn = document.createElement('button');
+      btn.className = 'read-more-btn';
+      btn.textContent = 'read more';
+      btn.addEventListener('click', () => {
+        const expanded = td.classList.toggle('expanded');
+        btn.textContent = expanded ? 'read less' : 'read more';
+      });
+      td.appendChild(btn);
+    } else {
+      td.textContent = value;
+    }
+
+    tr.appendChild(td);
+  });
+}
+
 function renderRows(rows) {
   const table = document.getElementById('data-table');
   table.innerHTML = '';
@@ -151,55 +204,7 @@ function renderRows(rows) {
     rows.forEach((row, i) => {
       const tr = document.createElement('tr');
       tr.className = i % 2 === 0 ? 'row-even' : 'row-odd';
-      allHeaders.forEach(header => {
-        const td = document.createElement('td');
-        const value = row[header] || '';
-        const headerNorm = header.toLowerCase().trim();
-
-        if (headerNorm === 'name') {
-          td.textContent = value;
-          const mentor1Header    = allHeaders.find(h => h.toLowerCase().trim() === 'mentor 1');
-          const needMentorHeader = allHeaders.find(h => h.toLowerCase().trim() === 'need mentor');
-          const mentor1Val    = mentor1Header    ? (row[mentor1Header]    || '').trim() : '';
-          const needMentorVal = needMentorHeader ? (row[needMentorHeader] || '').trim().toUpperCase() : '';
-
-          if (mentor1Val) {
-            td.classList.add('has-reset-btn');
-            const resetBtn = document.createElement('button');
-            resetBtn.className = 'reset-client-btn';
-            resetBtn.textContent = 'Reset Mentor';
-            resetBtn.addEventListener('click', () => onResetClient(row, resetBtn));
-            td.appendChild(resetBtn);
-          } else if (needMentorVal === 'YES') {
-            td.classList.add('has-reset-btn');
-            const getMentorBtn = document.createElement('button');
-            getMentorBtn.className = 'get-mentor-btn';
-            getMentorBtn.textContent = 'Get Mentor';
-            getMentorBtn.addEventListener('click', () => onGetMentor(row, getMentorBtn, td));
-            td.appendChild(getMentorBtn);
-          }
-        } else if (EXPANDABLE_COLUMNS.includes(headerNorm) && value.length > 0) {
-          td.classList.add('cell-expandable');
-
-          const textSpan = document.createElement('span');
-          textSpan.className = 'cell-text';
-          textSpan.textContent = value;
-          td.appendChild(textSpan);
-
-          const btn = document.createElement('button');
-          btn.className = 'read-more-btn';
-          btn.textContent = 'read more';
-          btn.addEventListener('click', () => {
-            const expanded = td.classList.toggle('expanded');
-            btn.textContent = expanded ? 'read less' : 'read more';
-          });
-          td.appendChild(btn);
-        } else {
-          td.textContent = value;
-        }
-
-        tr.appendChild(td);
-      });
+      buildTrCells(tr, row);
       tbody.appendChild(tr);
     });
   }
@@ -315,8 +320,16 @@ function onResetClient(row, btn) {
       // Clear Mentor 1–5 in Client Tracking
       await clearClientMentorColumns(row._rowIndex, allHeaders);
 
-      // Step 3: Refresh table data to reflect changes
-      await loadClientData();
+      // Step 3: Fetch updated row data and refresh only this row in the table
+      const rawCells = await fetchClientRow(row._rowIndex);
+      const updatedRow = { _rowIndex: row._rowIndex };
+      allHeaders.forEach((header, i) => {
+        updatedRow[header] = rawCells[i] !== undefined ? rawCells[i] : '';
+      });
+      const allRowsIdx = allRows.findIndex(r => r._rowIndex === row._rowIndex);
+      if (allRowsIdx >= 0) allRows[allRowsIdx] = updatedRow;
+      const tr = td.closest('tr');
+      buildTrCells(tr, updatedRow);
 
     } catch (err) {
       console.error('[ResetMentor] Failed:', err);

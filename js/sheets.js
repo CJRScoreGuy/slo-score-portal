@@ -144,6 +144,15 @@ async function clearClientMentorColumns(clientRowIndex, headers) {
   );
 }
 
+// ─── FETCH SINGLE CLIENT ROW ─────────────────────────────────────────────────
+async function fetchClientRow(dataRowIndex) {
+  const sheetRow = dataRowIndex + 2;
+  const range = `${SHEET_NAME}!A${sheetRow}:Z${sheetRow}`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(range)}`;
+  const data = await apiFetch(url);
+  return (data.values || [[]])[0] || [];
+}
+
 // ─── FETCH MENTOR STATUS ROWS (for card join) ─────────────────────────────────
 async function fetchMentorStatusRows() {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}/values/${encodeURIComponent(MENTOR_RANGE)}`;
