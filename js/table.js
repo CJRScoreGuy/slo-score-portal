@@ -167,7 +167,7 @@ function renderRows(rows) {
             td.classList.add('has-reset-btn');
             const resetBtn = document.createElement('button');
             resetBtn.className = 'reset-client-btn';
-            resetBtn.textContent = 'New Mentor';
+            resetBtn.textContent = 'Reset Mentor';
             resetBtn.addEventListener('click', () => onResetClient(row, resetBtn));
             td.appendChild(resetBtn);
           } else if (needMentorVal === 'YES') {
@@ -295,7 +295,7 @@ async function onResetClient(row, btn) {
   } catch (err) {
     console.error('[NewMentor] Failed:', err);
     btn.disabled = false;
-    btn.textContent = 'New Mentor';
+    btn.textContent = 'Reset Mentor';
     showClientError(`New Mentor failed: ${err.message}`);
   }
 }
