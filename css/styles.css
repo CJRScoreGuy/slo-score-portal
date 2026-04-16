@@ -366,6 +366,31 @@ button {
 .reset-client-btn:hover { background: #e6d800; }
 .reset-client-btn:disabled { opacity: 0.6; cursor: wait; }
 
+/* Reset confirmation buttons */
+.reset-confirm-btn,
+.reset-cancel-btn {
+  display: inline-block;
+  margin-top: 5px;
+  margin-right: 4px;
+  padding: 3px 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.reset-confirm-btn {
+  background: #d93025;
+  color: #fff;
+}
+.reset-confirm-btn:hover { background: #b31412; }
+.reset-cancel-btn {
+  background: #e8eaed;
+  color: #202124;
+}
+.reset-cancel-btn:hover { background: #dadce0; }
+
 /* Get Mentor button */
 .get-mentor-btn {
   display: block;
