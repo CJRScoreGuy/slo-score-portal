@@ -177,7 +177,7 @@ const APPS_SCRIPT_ID = 'AKfycbzFW55wo6_mlmrOoAycBR6A474NPDgBb_TfFFVz-eIqchbI1NR3
 
 // Web app URL for CIC group membership check.
 // Paste the /exec URL here after deploying the doGet endpoint as a web app.
-const CIC_CHECK_URL = '';
+const CIC_CHECK_URL = 'https://script.google.com/a/macros/scorevolunteer.org/s/AKfycbxCm4Icl5MopzCtNRmKU-ZOcvL95gHUUBCaRwSJZ38S0VfCI1Ly4NXdYos_RrJXwg/exec';
 
 async function checkCICMembership(email) {
   if (!CIC_CHECK_URL) return false;
