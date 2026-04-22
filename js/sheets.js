@@ -160,8 +160,32 @@ async function fetchMentorStatusRows() {
   return normalizeValues(data.values || []);
 }
 
+// ─── WRITE SINGLE CLIENT TRACKING CELL ───────────────────────────────────────
+async function updateClientTrackingCell(rowIndex, colLetter, value) {
+  const sheetRow = rowIndex + 2;
+  const range = encodeURIComponent(`${SHEET_NAME}!${colLetter}${sheetRow}`);
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?valueInputOption=RAW`;
+  await apiFetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ values: [[value]] })
+  });
+}
+
 // ─── APPS SCRIPT ──────────────────────────────────────────────────────────────
 const APPS_SCRIPT_ID = 'AKfycbzFW55wo6_mlmrOoAycBR6A474NPDgBb_TfFFVz-eIqchbI1NR3yEg0URPcXJKKofE';
+
+// Web app URL for CIC group membership check.
+// Paste the /exec URL here after deploying the doGet endpoint as a web app.
+const CIC_CHECK_URL = '';
+
+async function checkCICMembership(email) {
+  if (!CIC_CHECK_URL) return false;
+  const res = await fetch(`${CIC_CHECK_URL}?email=${encodeURIComponent(email)}`);
+  if (!res.ok) throw new Error(`CIC check HTTP ${res.status}`);
+  const data = await res.json();
+  return data.result === true;
+}
 
 async function runGetMentorScript(clientEmail) {
   const url = `https://script.googleapis.com/v1/scripts/${APPS_SCRIPT_ID}:run`;

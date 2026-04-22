@@ -65,6 +65,12 @@ function buildMentorRow(tr, row, displayIdx) {
   tr.innerHTML = '';
   const dataRowIndex = row._rowIndex !== undefined ? row._rowIndex : parseInt(tr.dataset.rowIndex, 10);
 
+  // Determine edit permission: CIC members can edit all rows;
+  // others can only edit the row whose email matches their own sign-in.
+  const emailHeader = mentorHeaders.find(h => h.toLowerCase().trim() === 'email');
+  const rowEmail = emailHeader ? (row[emailHeader] || '').toLowerCase().trim() : '';
+  const userCanEdit = isCICMember || (signedInEmail && rowEmail === signedInEmail.toLowerCase().trim());
+
   // Availability coloring takes priority over stripe
   const availability = (row['Availability'] || '').trim();
   if (availability === 'Unavailable') {
@@ -92,7 +98,11 @@ function buildMentorRow(tr, row, displayIdx) {
       cb.dataset.rowIndex = dataRowIndex;
       cb.dataset.colIndex = colIdx;
       cb.dataset.header = header;
-      cb.addEventListener('change', onMentorCheckboxChange);
+      if (userCanEdit) {
+        cb.addEventListener('change', onMentorCheckboxChange);
+      } else {
+        cb.disabled = true;
+      }
       td.appendChild(cb);
       td.className = 'checkbox-cell';
     }

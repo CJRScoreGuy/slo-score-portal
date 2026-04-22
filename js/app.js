@@ -1,3 +1,7 @@
+// ─── CIC GROUP STATE ─────────────────────────────────────────────────────────
+let isCICMember = false;
+let signedInEmail = '';
+
 // ─── APP ENTRY POINT ─────────────────────────────────────────────────────────
 function initApp() {
   initAuth(onSignedIn);
@@ -13,8 +17,17 @@ function initApp() {
 }
 
 // ─── AFTER SUCCESSFUL SIGN-IN ────────────────────────────────────────────────
-function onSignedIn(userInfo) {
-  document.getElementById('user-email').textContent = userInfo.email;
+async function onSignedIn(userInfo) {
+  signedInEmail = userInfo.email || '';
+  document.getElementById('user-email').textContent = signedInEmail;
+
+  try {
+    isCICMember = await checkCICMembership(signedInEmail);
+  } catch (err) {
+    console.warn('[CIC] Membership check failed, defaulting to non-CIC:', err);
+    isCICMember = false;
+  }
+
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app-screen').classList.remove('hidden');
   switchTab('clients');
