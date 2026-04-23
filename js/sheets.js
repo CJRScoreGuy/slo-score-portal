@@ -180,13 +180,18 @@ const APPS_SCRIPT_ID = 'AKfycbzFW55wo6_mlmrOoAycBR6A474NPDgBb_TfFFVz-eIqchbI1NR3
 const CIC_CHECK_URL = 'https://script.google.com/a/macros/scorevolunteer.org/s/AKfycbxCm4Icl5MopzCtNRmKU-ZOcvL95gHUUBCaRwSJZ38S0VfCI1Ly4NXdYos_RrJXwg/exec';
 
 async function checkCICMembership(email) {
-  if (!CIC_CHECK_URL) return false;
-  const res = await fetch(`${CIC_CHECK_URL}?email=${encodeURIComponent(email)}`, {
-    headers: { Authorization: `Bearer ${getAccessToken()}` }
+  const url = `https://script.googleapis.com/v1/scripts/${APPS_SCRIPT_ID}:run`;
+  const result = await apiFetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      function: 'isUserInCICGroup',
+      parameters: [email],
+      devMode: false
+    })
   });
-  if (!res.ok) throw new Error(`CIC check HTTP ${res.status}`);
-  const data = await res.json();
-  return data.result === true;
+  if (result.error) return false;
+  return result.response?.result === true;
 }
 
 async function runGetMentorScript(clientEmail) {
