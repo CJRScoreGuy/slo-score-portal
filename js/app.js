@@ -79,8 +79,7 @@ async function loadClientData() {
     renderTable(headers, rows);
   } catch (err) {
     if (err.message === 'SESSION_EXPIRED') {
-      showClientError('Your session expired. Please sign in again.');
-      signOut();
+      showClientError('Your session expired. Please use the Sign Out button to sign in again.');
     } else {
       showClientError(`Failed to load data: ${err.message}`);
       console.error(err);
@@ -124,8 +123,7 @@ async function loadMentorInfoTab() {
     mentorInfoLoaded = true;
   } catch (err) {
     if (err.message === 'SESSION_EXPIRED') {
-      error.textContent = 'Your session expired. Please sign in again.';
-      signOut();
+      error.textContent = 'Your session expired. Please use the Sign Out button to sign in again.';
     } else {
       error.textContent = `Failed to load mentor information: ${err.message}`;
       console.error(err);
@@ -149,8 +147,7 @@ async function loadMentorData() {
   } catch (err) {
     document.getElementById('mentor-loading').classList.add('hidden');
     if (err.message === 'SESSION_EXPIRED') {
-      showMentorError('Your session expired. Please sign in again.');
-      signOut();
+      showMentorError('Your session expired. Please use the Sign Out button to sign in again.');
     } else {
       showMentorError(`Failed to load mentor data: ${err.message}`);
       console.error(err);
