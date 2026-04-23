@@ -117,7 +117,7 @@ async function loadMentorInfoTab() {
 
   // Wire up search input (once)
   const searchInput = document.getElementById('mentor-info-search');
-  searchInput.oninput = () => searchMentorInfo(searchInput.value);
+  searchInput.addEventListener('input', () => searchMentorInfo(searchInput.value));
 
   try {
     await loadMentorInfoData();

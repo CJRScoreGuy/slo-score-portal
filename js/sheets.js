@@ -28,7 +28,7 @@ async function apiFetch(url, options = {}) {
     }
   }
   if (!response.ok) {
-    const body = await response.json().catch(() => ({}));
+    const body = await response.json().catch(() => ({})); // error body may not be JSON — fall back to empty object
 throw new Error(body?.error?.message || `Sheets API error ${response.status}`);
   }
   return response.json();
@@ -173,11 +173,9 @@ async function updateClientTrackingCell(rowIndex, colLetter, value) {
 }
 
 // ─── APPS SCRIPT ──────────────────────────────────────────────────────────────
+// APPS_SCRIPT_ID is a public deployment identifier, not a secret — safe to store here
+// since this is client-side JS with no server-side secret store available.
 const APPS_SCRIPT_ID = 'AKfycbzFW55wo6_mlmrOoAycBR6A474NPDgBb_TfFFVz-eIqchbI1NR3yEg0URPcXJKKofE';
-
-// Web app URL for CIC group membership check.
-// Paste the /exec URL here after deploying the doGet endpoint as a web app.
-const CIC_CHECK_URL = 'https://script.google.com/a/macros/scorevolunteer.org/s/AKfycbxCm4Icl5MopzCtNRmKU-ZOcvL95gHUUBCaRwSJZ38S0VfCI1Ly4NXdYos_RrJXwg/exec';
 
 async function checkCICMembership(email) {
   const url = `https://script.googleapis.com/v1/scripts/${APPS_SCRIPT_ID}:run`;
