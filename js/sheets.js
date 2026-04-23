@@ -181,7 +181,9 @@ const CIC_CHECK_URL = 'https://script.google.com/a/macros/scorevolunteer.org/s/A
 
 async function checkCICMembership(email) {
   if (!CIC_CHECK_URL) return false;
-  const res = await fetch(`${CIC_CHECK_URL}?email=${encodeURIComponent(email)}`);
+  const res = await fetch(`${CIC_CHECK_URL}?email=${encodeURIComponent(email)}`, {
+    headers: { Authorization: `Bearer ${getAccessToken()}` }
+  });
   if (!res.ok) throw new Error(`CIC check HTTP ${res.status}`);
   const data = await res.json();
   return data.result === true;
