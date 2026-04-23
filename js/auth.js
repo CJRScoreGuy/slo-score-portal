@@ -50,9 +50,12 @@ async function handleTokenResponse(response) {
 
   accessToken = response.access_token;
 
-  // Hide login screen immediately so the user isn't left staring at it
-  // while we verify their domain via the userinfo endpoint.
+  // Show the app shell immediately so the user sees the SCORE Clients
+  // tab while we verify their domain via the userinfo endpoint (~1–3s).
   document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
+  document.getElementById('loading').classList.remove('hidden');
+  document.getElementById('table-wrap').classList.add('hidden');
 
   // Verify the user belongs to the allowed domain (security layer — not just UI hint)
   try {
@@ -64,6 +67,8 @@ async function handleTokenResponse(response) {
       // Revoke immediately — wrong domain
       google.accounts.oauth2.revoke(accessToken, () => {});
       accessToken = null;
+      document.getElementById('app-screen').classList.add('hidden');
+      document.getElementById('loading').classList.add('hidden');
       document.getElementById('login-screen').classList.remove('hidden');
       showError(`Access restricted to @${ALLOWED_DOMAIN} accounts. You signed in as: ${email}`);
       return;
@@ -73,6 +78,8 @@ async function handleTokenResponse(response) {
     if (_signedInCallback) _signedInCallback(userInfo);
   } catch (err) {
     accessToken = null;
+    document.getElementById('app-screen').classList.add('hidden');
+    document.getElementById('loading').classList.add('hidden');
     document.getElementById('login-screen').classList.remove('hidden');
     showError('Could not verify your account. Please try again.');
     console.error(err);
