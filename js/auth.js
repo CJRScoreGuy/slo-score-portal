@@ -50,6 +50,10 @@ async function handleTokenResponse(response) {
 
   accessToken = response.access_token;
 
+  // Hide login screen immediately so the user isn't left staring at it
+  // while we verify their domain via the userinfo endpoint.
+  document.getElementById('login-screen').classList.add('hidden');
+
   // Verify the user belongs to the allowed domain (security layer — not just UI hint)
   try {
     const userInfo = await fetchUserInfo(accessToken);
@@ -60,6 +64,7 @@ async function handleTokenResponse(response) {
       // Revoke immediately — wrong domain
       google.accounts.oauth2.revoke(accessToken, () => {});
       accessToken = null;
+      document.getElementById('login-screen').classList.remove('hidden');
       showError(`Access restricted to @${ALLOWED_DOMAIN} accounts. You signed in as: ${email}`);
       return;
     }
@@ -68,6 +73,7 @@ async function handleTokenResponse(response) {
     if (_signedInCallback) _signedInCallback(userInfo);
   } catch (err) {
     accessToken = null;
+    document.getElementById('login-screen').classList.remove('hidden');
     showError('Could not verify your account. Please try again.');
     console.error(err);
   }
