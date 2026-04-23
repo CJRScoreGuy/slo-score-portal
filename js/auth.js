@@ -83,7 +83,7 @@ function reAuth() {
       accessToken = response.access_token;
       resolve(accessToken);
     };
-    tokenClient.requestAccessToken({ prompt: '' });
+    tokenClient.requestAccessToken({ prompt: 'none' });
   });
 }
 
