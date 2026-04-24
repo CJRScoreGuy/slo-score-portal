@@ -9,7 +9,8 @@ const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets',
   'https://www.googleapis.com/auth/script.projects',
   'https://www.googleapis.com/auth/script.external_request',
-  'https://www.googleapis.com/auth/groups'
+  'https://www.googleapis.com/auth/groups',
+  'https://www.googleapis.com/auth/calendar.readonly'
 ].join(' ');
 
 // ─── STATE ────────────────────────────────────────────────────────────────────

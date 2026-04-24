@@ -37,6 +37,7 @@ async function onSignedIn(userInfo) {
 let currentTab = 'clients';
 let mentorLoaded = false;
 let mentorInfoLoaded = false;
+let clientMeetingsLoaded = false;
 
 function switchTab(tab) {
   currentTab = tab;
@@ -54,6 +55,8 @@ function switchTab(tab) {
     if (!mentorLoaded) loadMentorData();
   } else if (tab === 'mentor-info') {
     if (!mentorInfoLoaded) loadMentorInfoTab();
+  } else if (tab === 'client-meetings') {
+    if (!clientMeetingsLoaded) loadClientMeetingsTab();
   }
 }
 
@@ -66,6 +69,37 @@ function refreshCurrentTab() {
   } else if (currentTab === 'mentor-info') {
     mentorInfoLoaded = false;
     loadMentorInfoTab();
+  } else if (currentTab === 'client-meetings') {
+    clientMeetingsLoaded = false;
+    loadClientMeetingsTab();
+  }
+}
+
+// ─── CLIENT MEETINGS DATA ────────────────────────────────────────────────────
+async function loadClientMeetingsTab() {
+  const loading = document.getElementById('client-meetings-loading');
+  const error   = document.getElementById('client-meetings-error');
+  const wrap    = document.getElementById('client-meetings-wrap');
+
+  loading.classList.remove('hidden');
+  error.classList.add('hidden');
+  wrap.classList.add('hidden');
+  wrap.innerHTML = '';
+
+  try {
+    const events = await fetchClientMeetings();
+    renderClientMeetings(events);
+    clientMeetingsLoaded = true;
+  } catch (err) {
+    if (err.message === 'SESSION_EXPIRED') {
+      error.textContent = 'Your session expired. Please use the Sign Out button to sign in again.';
+    } else {
+      error.textContent = `Failed to load client meetings: ${err.message}`;
+      console.error(err);
+    }
+    error.classList.remove('hidden');
+  } finally {
+    loading.classList.add('hidden');
   }
 }
 
