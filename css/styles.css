@@ -838,3 +838,72 @@ button {
   .filter-group input { width: 130px; }
   .tab-btn { padding: 10px 12px; font-size: 13px; }
 }
+
+/* ─── CLIENT MEETINGS TAB ──────────────────────────────────────────────────── */
+.tab-panel[data-tab="client-meetings"] {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#client-meetings-wrap {
+  padding: 0 24px 24px;
+  overflow-x: auto;
+}
+
+#client-meetings-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  font-size: 13px;
+}
+
+#client-meetings-table thead th {
+  background: #2FEEB5;
+  color: #202124;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+#client-meetings-table thead th:first-child { border-radius: 6px 0 0 0; }
+#client-meetings-table thead th:last-child  { border-radius: 0 6px 0 0; }
+
+#client-meetings-table tbody td {
+  padding: 9px 12px;
+  border-bottom: 1px solid #f1f3f4;
+  vertical-align: top;
+}
+
+.cm-row-even { background: #fff; }
+.cm-row-odd  { background: #f8f9fa; }
+
+#client-meetings-table tbody tr:hover { background: #e6fdf6; }
+
+.cm-location-link {
+  color: #1a73e8;
+  text-decoration: none;
+  word-break: break-all;
+}
+.cm-location-link:hover { text-decoration: underline; }
+
+.cm-empty {
+  color: #5f6368;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+#client-meetings-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  color: #5f6368;
+}
