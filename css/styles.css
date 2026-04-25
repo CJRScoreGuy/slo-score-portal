@@ -183,7 +183,7 @@ button {
   border: 1px solid transparent;
   border-radius: 4px 4px 0 0;
   color: #aaa;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 500;
   padding: 10px 20px;
   margin-bottom: -2px;
@@ -286,7 +286,7 @@ button {
   border-collapse: collapse;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0,0,0,.1);
-  font-size: 13px;
+  font-size: 15px;
 }
 
 #data-table thead th {
@@ -295,7 +295,7 @@ button {
   padding: 10px 12px;
   text-align: left;
   font-weight: 500;
-  font-size: 16px;
+  font-size: 18px;
   white-space: normal;
   position: sticky;
   top: 0;
@@ -725,7 +725,7 @@ button {
   border-collapse: collapse;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0,0,0,.1);
-  font-size: 13px;
+  font-size: 15px;
 }
 
 #mentor-table thead th:first-child { border-radius: 6px 0 0 0; }
@@ -737,7 +737,7 @@ button {
   padding: 10px 12px;
   text-align: left;
   font-weight: 500;
-  font-size: 16px;
+  font-size: 18px;
   white-space: normal;
   position: sticky;
   top: 0;
@@ -855,7 +855,7 @@ button {
   border-collapse: collapse;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0,0,0,.1);
-  font-size: 13px;
+  font-size: 15px;
 }
 
 #client-meetings-table thead th {
@@ -864,7 +864,7 @@ button {
   padding: 10px 12px;
   text-align: left;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 18px;
   white-space: nowrap;
   position: sticky;
   top: 0;
