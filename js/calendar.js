@@ -43,7 +43,7 @@ function renderClientMeetings(events) {
 
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
-  ['Date', 'Time', 'Subject', 'Location', 'Guests'].forEach(label => {
+  ['Date', 'Time', 'Subject', 'Location', 'Mentors and Clients'].forEach(label => {
     const th = document.createElement('th');
     th.textContent = label;
     headerRow.appendChild(th);
@@ -101,7 +101,14 @@ function appendGuestsCell(tr, attendees) {
   if (!attendees || !attendees.length) {
     td.textContent = '—';
   } else {
-    attendees.forEach((a, i) => {
+    const sorted = [...attendees].sort((a, b) => {
+      const aDomain = (a.email || '').split('@')[1] || '';
+      const bDomain = (b.email || '').split('@')[1] || '';
+      const aIsMentor = aDomain === 'scorevolunteer.org' ? 0 : 1;
+      const bIsMentor = bDomain === 'scorevolunteer.org' ? 0 : 1;
+      return aIsMentor - bIsMentor;
+    });
+    sorted.forEach((a, i) => {
       if (i > 0) td.appendChild(document.createElement('br'));
       const email  = a.email || '';
       const domain = email.split('@')[1] || '';
