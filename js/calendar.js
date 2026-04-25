@@ -82,9 +82,9 @@ function appendLocationCell(tr, location) {
   const td = document.createElement('td');
   if (!location) {
     td.textContent = '—';
-  } else if (location.startsWith('http://') || location.startsWith('https://')) {
+  } else if (location.startsWith('http://') || location.startsWith('https://') || location.startsWith('meet.google.com')) {
     const a = document.createElement('a');
-    a.href = location;
+    a.href = location.startsWith('meet.google.com') ? 'https://' + location : location;
     a.textContent = location;
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
