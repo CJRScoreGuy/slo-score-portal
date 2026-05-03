@@ -188,8 +188,13 @@ async function checkCICMembership(email) {
       devMode: false
     })
   });
-  if (result.error) return false;
-  return result.response?.result === true;
+  if (result.error) {
+    console.warn('[CIC] Apps Script returned an error:', JSON.stringify(result.error));
+    return false;
+  }
+  const isMember = result.response?.result == true; // loose equality handles string "true" or number 1
+  console.log('[CIC] isUserInCICGroup raw result:', result.response?.result, '→ isMember:', isMember);
+  return isMember;
 }
 
 async function runGetMentorScript(clientEmail) {
