@@ -49,6 +49,14 @@ async function handleTokenResponse(response) {
     return;
   }
 
+  // If the calendar scope wasn't granted (e.g. user had a cached grant from before
+  // the calendar feature was added), force re-consent to get all required scopes.
+  const grantedScopes = (response.scope || '').split(' ');
+  if (!grantedScopes.includes('https://www.googleapis.com/auth/calendar.readonly')) {
+    tokenClient.requestAccessToken({ prompt: 'consent' });
+    return;
+  }
+
   accessToken = response.access_token;
 
   // Show the app shell immediately so the user sees the SCORE Clients
