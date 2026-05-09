@@ -175,7 +175,44 @@ async function loadMentorData() {
   document.getElementById('mentor-error').classList.add('hidden');
 
   try {
-    const { headers, rows, hiddenCols } = await fetchMentorData();
+    const [{ headers, rows, hiddenCols }, assignmentsResp] = await Promise.all([
+      fetchMentorData(),
+      fetchMentorAssignmentsData()
+    ]);
+
+    // Build email → assignments row lookup
+    const assignedByEmail = {};
+    assignmentsResp.rows.forEach(row => {
+      const email = col(row, EMAIL_KEYS);
+      if (email) assignedByEmail[email.toLowerCase().trim()] = row;
+    });
+
+    // Override Availability display for rows where Availability = "Available"
+    const emailHeader = headers.find(h => h.toLowerCase().trim() === 'email');
+    const availHeader = headers.find(h => h.toLowerCase().trim() === 'availability');
+    if (emailHeader && availHeader) {
+      rows.forEach(row => {
+        if ((row[availHeader] || '').trim() !== 'Available') return;
+
+        const email = (row[emailHeader] || '').toLowerCase().trim();
+        const aRow = assignedByEmail[email] || {};
+        const mentorAssigned = String(col(aRow, ['mentor assigned']) || '').trim() === '1';
+        const status   = (col(row, STATUS_KEYS)   || '').trim();
+        const activity = (col(row, ACTIVITY_KEYS) || '').trim();
+
+        if (status === 'Active with profile' && activity === 'Any') {
+          if (mentorAssigned) row[availHeader] = 'Assigned';
+          // else leave as "Available"
+        } else if (status === 'Active with profile' && activity !== 'Any') {
+          row[availHeader] = activity || 'WIP';
+        } else if (status === 'Provisional' && activity === 'Any') {
+          row[availHeader] = status; // "Provisional"
+        } else {
+          row[availHeader] = 'WIP';
+        }
+      });
+    }
+
     renderMentorTable(headers, rows, hiddenCols);
     mentorLoaded = true;
   } catch (err) {
