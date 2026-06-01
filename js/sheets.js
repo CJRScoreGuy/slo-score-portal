@@ -79,7 +79,7 @@ async function fetchMentorData() {
 // ─── FETCH SINGLE MENTOR ROW ──────────────────────────────────────────────────
 async function fetchMentorRow(dataRowIndex) {
   const sheetRow = dataRowIndex + 2;
-  const range = `${MENTOR_SHEET_NAME}!A${sheetRow}:Z${sheetRow}`;
+  const range = `${MENTOR_SHEET_NAME}!A${sheetRow}:BE${sheetRow}`;
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}/values/${encodeURIComponent(range)}`;
   const data = await apiFetch(url);
   return (data.values || [[]])[0] || [];
