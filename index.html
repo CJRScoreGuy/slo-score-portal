@@ -40,7 +40,6 @@
       <button class="tab-btn active" data-tab="clients">SCORE Clients</button>
       <button class="tab-btn" data-tab="mentor-calendar">Mentor Calendar</button>
       <button class="tab-btn" data-tab="mentor-info">Mentor Information</button>
-      <button class="tab-btn" data-tab="client-meetings">Client Meetings</button>
     </nav>
 
     <!-- ── TAB: SCORE CLIENTS ─────────────────────────────────────────── -->
@@ -93,21 +92,7 @@
 
     </div>
 
-    <!-- ── TAB: CLIENT MEETINGS ──────────────────────────────────────── -->
-    <div class="tab-panel hidden" data-tab="client-meetings">
-
-      <div id="client-meetings-error" class="hidden data-error-msg"></div>
-
-      <div id="client-meetings-loading" class="hidden">
-        <div class="spinner"></div>
-        <span>Loading client meetings…</span>
-      </div>
-
-      <div id="client-meetings-wrap" class="hidden"></div>
-
-    </div>
-
-    <!-- ── TAB: MENTOR CALENDAR ───────────────────────────────────────── -->
+<!-- ── TAB: MENTOR CALENDAR ───────────────────────────────────────── -->
     <div class="tab-panel hidden" data-tab="mentor-calendar">
 
       <div id="mentor-error" class="hidden data-error-msg"></div>
@@ -131,8 +116,7 @@
   <script src="js/table.js"></script>
   <script src="js/mentor.js"></script>
   <script src="js/mentor-info.js"></script>
-  <script src="js/calendar.js"></script>
-  <script src="js/app.js"></script>
+<script src="js/app.js"></script>
   <script src="https://accounts.google.com/gsi/client" onload="initApp()" async defer></script>
 
   <script>

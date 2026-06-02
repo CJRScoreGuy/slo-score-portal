@@ -9,8 +9,7 @@ const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets',
   'https://www.googleapis.com/auth/script.projects',
   'https://www.googleapis.com/auth/script.external_request',
-  'https://www.googleapis.com/auth/groups',
-  'https://www.googleapis.com/auth/calendar.readonly'
+  'https://www.googleapis.com/auth/groups'
 ].join(' ');
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -46,14 +45,6 @@ async function handleTokenResponse(response) {
   if (response.error) {
     console.error('Auth error:', response.error);
     showError('Sign-in failed: ' + response.error);
-    return;
-  }
-
-  // If the calendar scope wasn't granted (e.g. user had a cached grant from before
-  // the calendar feature was added), force re-consent to get all required scopes.
-  const grantedScopes = (response.scope || '').split(' ');
-  if (!grantedScopes.includes('https://www.googleapis.com/auth/calendar.readonly')) {
-    tokenClient.requestAccessToken({ prompt: 'consent' });
     return;
   }
 
