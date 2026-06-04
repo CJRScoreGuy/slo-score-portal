@@ -100,6 +100,10 @@ function buildFilterBar(headers) {
     clearBtn.addEventListener('click', clearAllFilters);
     bar.appendChild(clearBtn);
   }
+
+  // Move Add Client controls next to Clear Filters
+  const addClientControls = document.getElementById('add-client-controls');
+  if (addClientControls) bar.appendChild(addClientControls);
 }
 
 // ─── FILTER LOGIC ─────────────────────────────────────────────────────────────
