@@ -397,7 +397,7 @@ function updateRowCount(shown, total) {
   const el = document.getElementById('row-count');
   if (el) {
     el.textContent = shown === total
-      ? `${total} records`
-      : `${shown} of ${total} records`;
+      ? `Number of clients: ${total}`
+      : `Number of clients: ${shown} of ${total}`;
   }
 }
