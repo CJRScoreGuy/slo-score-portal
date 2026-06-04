@@ -210,6 +210,70 @@ async function runGetMentorScript(clientEmail) {
   });
 }
 
+// ─── ADD CLIENT ROW ───────────────────────────────────────────────────────────
+// Inserts / deletes / writes row 2 (the first data row) in the Client Tracking sheet.
+// Requires the numeric sheetId which is fetched once and cached.
+let _clientSheetId = null;
+
+async function getClientSheetId() {
+  if (_clientSheetId !== null) return _clientSheetId;
+  const data = await apiFetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?fields=sheets(properties.sheetId,properties.title)`
+  );
+  const sheet = (data.sheets || []).find(s => s.properties.title === SHEET_NAME);
+  _clientSheetId = sheet ? sheet.properties.sheetId : 0;
+  return _clientSheetId;
+}
+
+async function insertBlankClientRow() {
+  const sheetId = await getClientSheetId();
+  await apiFetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}:batchUpdate`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        requests: [{
+          insertDimension: {
+            range: { sheetId, dimension: 'ROWS', startIndex: 1, endIndex: 2 },
+            inheritFromBefore: false
+          }
+        }]
+      })
+    }
+  );
+}
+
+async function deleteClientRow() {
+  const sheetId = await getClientSheetId();
+  await apiFetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}:batchUpdate`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        requests: [{
+          deleteDimension: {
+            range: { sheetId, dimension: 'ROWS', startIndex: 1, endIndex: 2 }
+          }
+        }]
+      })
+    }
+  );
+}
+
+async function writeClientRow(values) {
+  const range = encodeURIComponent(`${SHEET_NAME}!A2`);
+  await apiFetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?valueInputOption=USER_ENTERED`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [values] })
+    }
+  );
+}
+
 // ─── COLUMN INDEX TO A1 LETTER ────────────────────────────────────────────────
 function colIndexToLetter(idx) {
   let letter = '';

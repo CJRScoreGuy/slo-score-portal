@@ -1,6 +1,22 @@
 // Columns that expand on hover to show full text
 const EXPANDABLE_COLUMNS = ['client request', 'response'];
 
+// Columns to display as full month-name dates (e.g. "June 4, 2026")
+const DATE_COLUMNS = ['date submitted', 'responded'];
+
+function formatDateValue(value) {
+  if (!value) return value;
+  // ISO YYYY-MM-DD — parse as local time to avoid UTC day-shift
+  const iso = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) {
+    const d = new Date(+iso[1], +iso[2] - 1, +iso[3]);
+    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return value;
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
 // Display name overrides — maps sheet header (lowercase) → label shown in UI
 const COLUMN_DISPLAY_NAMES = {
   'mentor 1': 'Lead Mentor',
@@ -153,6 +169,8 @@ function buildTrCells(tr, row) {
           td.appendChild(getMentorBtn);
         }
       }
+    } else if (DATE_COLUMNS.includes(headerNorm) && value) {
+      td.textContent = formatDateValue(value);
     } else if (EXPANDABLE_COLUMNS.includes(headerNorm) && value.length > 0) {
       td.classList.add('cell-expandable');
 

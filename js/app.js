@@ -2,6 +2,10 @@
 let isCICMember = false;
 let signedInEmail = '';
 
+// ─── ADD CLIENT STATE ─────────────────────────────────────────────────────────
+let clientHeaders = [];
+const REQUIRED_CLIENT_FIELDS = ['email', 'name', 'phone', 'preferred contact', 'date submitted'];
+
 // ─── APP ENTRY POINT ─────────────────────────────────────────────────────────
 function initApp() {
   initAuth(onSignedIn);
@@ -9,6 +13,9 @@ function initApp() {
   document.getElementById('signin-btn').addEventListener('click', signIn);
   document.getElementById('signout-btn').addEventListener('click', signOut);
   document.getElementById('refresh-btn').addEventListener('click', refreshCurrentTab);
+  document.getElementById('add-client-btn').addEventListener('click', startAddClient);
+  document.getElementById('commit-client-btn').addEventListener('click', commitClient);
+  document.getElementById('cancel-client-btn').addEventListener('click', cancelClient);
 
   // Tab switching
   document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -76,7 +83,14 @@ async function loadClientData() {
 
   try {
     const { headers, rows } = await fetchSheetData();
+    clientHeaders = headers;
     renderTable(headers, rows);
+    // Show Add Client controls for CIC members and reset to initial button state
+    document.getElementById('add-client-controls').classList.toggle('hidden', !isCICMember);
+    document.getElementById('add-client-btn').classList.remove('hidden');
+    document.getElementById('commit-client-btn').classList.add('hidden');
+    document.getElementById('cancel-client-btn').classList.add('hidden');
+    document.getElementById('refresh-btn').disabled = false;
   } catch (err) {
     if (err.message === 'SESSION_EXPIRED') {
       showClientError('Your session expired. Please use the Sign Out button to sign in again.');
@@ -102,6 +116,101 @@ function showClientError(msg) {
   const el = document.getElementById('data-error');
   el.textContent = msg;
   el.classList.remove('hidden');
+}
+
+// ─── ADD CLIENT HANDLERS ──────────────────────────────────────────────────────
+async function startAddClient() {
+  const addBtn = document.getElementById('add-client-btn');
+  addBtn.disabled = true;
+
+  try {
+    await insertBlankClientRow();
+  } catch (err) {
+    showClientError(`Failed to add row: ${err.message}`);
+    addBtn.disabled = false;
+    return;
+  }
+
+  // Inserting row 2 shifts all existing rows down — update in-memory indices
+  allRows.forEach(row => { row._rowIndex++; });
+
+  // Switch to Commit/Cancel mode and disable Refresh to avoid stale-index issues
+  addBtn.classList.add('hidden');
+  addBtn.disabled = false;
+  document.getElementById('commit-client-btn').classList.remove('hidden');
+  document.getElementById('cancel-client-btn').classList.remove('hidden');
+  document.getElementById('refresh-btn').disabled = true;
+
+  // Prepend editable row at top of table
+  const tbody = document.querySelector('#data-table tbody');
+  if (!tbody) return;
+  const tr = document.createElement('tr');
+  tr.id = 'new-client-row';
+  tr.className = 'new-client-row';
+  clientHeaders.forEach((header, i) => {
+    const td = document.createElement('td');
+    const input = document.createElement('input');
+    const norm = header.toLowerCase().trim();
+    input.type = norm.includes('date') ? 'date' : 'text';
+    input.placeholder = header;
+    input.className = 'new-client-input';
+    input.dataset.colIndex = i;
+    if (REQUIRED_CLIENT_FIELDS.includes(norm)) input.dataset.required = 'true';
+    td.appendChild(input);
+    tr.appendChild(td);
+  });
+  tbody.prepend(tr);
+  const firstInput = tr.querySelector('input');
+  if (firstInput) firstInput.focus();
+}
+
+async function commitClient() {
+  const tr = document.getElementById('new-client-row');
+  if (!tr) return;
+
+  // Clear previous error state
+  tr.querySelectorAll('.new-client-input').forEach(inp => inp.classList.remove('input-error'));
+  clearClientError();
+
+  // Validate required fields
+  const missing = [...tr.querySelectorAll('input[data-required="true"]')]
+    .filter(inp => !inp.value.trim());
+  if (missing.length) {
+    missing.forEach(inp => inp.classList.add('input-error'));
+    showClientError(`Required: ${missing.map(inp => inp.placeholder).join(', ')}`);
+    return;
+  }
+
+  const values = [...tr.querySelectorAll('input')].map(inp => inp.value.trim());
+
+  const commitBtn = document.getElementById('commit-client-btn');
+  const cancelBtn = document.getElementById('cancel-client-btn');
+  commitBtn.disabled = true;
+  cancelBtn.disabled = true;
+
+  try {
+    await writeClientRow(values);
+  } catch (err) {
+    showClientError(`Failed to save: ${err.message}`);
+    commitBtn.disabled = false;
+    cancelBtn.disabled = false;
+    return;
+  }
+
+  loadClientData();
+}
+
+async function cancelClient() {
+  document.getElementById('commit-client-btn').disabled = true;
+  document.getElementById('cancel-client-btn').disabled = true;
+
+  try {
+    await deleteClientRow();
+  } catch (err) {
+    console.error('[AddClient] Failed to delete row on cancel:', err);
+  }
+
+  loadClientData();
 }
 
 // ─── MENTOR INFORMATION DATA ───────────────────────────────────────────────────
