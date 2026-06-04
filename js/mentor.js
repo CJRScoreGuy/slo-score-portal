@@ -67,7 +67,10 @@ function buildMentorRow(tr, row, displayIdx) {
 
   // Determine edit permission: CIC members can edit all rows;
   // others can only edit the row whose email matches their own sign-in.
-  const emailHeader = mentorHeaders.find(h => h.toLowerCase().trim() === 'email');
+  const emailHeader = mentorHeaders.find(h =>
+    ['email', 'score email', 'scorevolunteer email', 'mentor email', 'e-mail']
+      .includes(h.toLowerCase().trim())
+  );
   const rowEmail = emailHeader ? (row[emailHeader] || '').toLowerCase().trim() : '';
   const userCanEdit = isCICMember || (signedInEmail && rowEmail === signedInEmail.toLowerCase().trim());
 
