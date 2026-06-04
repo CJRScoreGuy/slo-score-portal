@@ -32,6 +32,12 @@ async function onSignedIn(userInfo) {
   mentorLoaded = false;
   mentorInfoLoaded = false;
 
+  // Show app and load client data immediately — don't block on CIC check
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
+  switchTab('clients');
+
+  // CIC check runs in background; update dependent UI when done
   try {
     isCICMember = await checkCICMembership(signedInEmail);
   } catch (err) {
@@ -39,9 +45,14 @@ async function onSignedIn(userInfo) {
     isCICMember = false;
   }
 
-  document.getElementById('login-screen').classList.add('hidden');
-  document.getElementById('app-screen').classList.remove('hidden');
-  switchTab('clients');
+  // Update Add Client button with the now-known CIC status
+  document.getElementById('add-client-controls').classList.toggle('hidden', !isCICMember);
+
+  // If Mentor Calendar loaded before CIC check completed, force a fresh render
+  if (mentorLoaded) {
+    mentorLoaded = false;
+    if (currentTab === 'mentor-calendar') loadMentorData();
+  }
 }
 
 // ─── TAB SWITCHING ────────────────────────────────────────────────────────────
