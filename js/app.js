@@ -28,6 +28,10 @@ async function onSignedIn(userInfo) {
   signedInEmail = userInfo.email || '';
   document.getElementById('user-email').textContent = signedInEmail;
 
+  // Reset tab-load flags so CIC status is re-evaluated on every sign-in
+  mentorLoaded = false;
+  mentorInfoLoaded = false;
+
   try {
     isCICMember = await checkCICMembership(signedInEmail);
   } catch (err) {
