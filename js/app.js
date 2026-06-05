@@ -46,7 +46,7 @@ async function onSignedIn(userInfo) {
   }
 
   // Update Add Client button with the now-known CIC status
-  document.getElementById('add-client-controls').classList.toggle('hidden', !isCICMember);
+  document.getElementById('add-client-controls')?.classList.toggle('hidden', !isCICMember);
 
   // If Mentor Calendar loaded before CIC check completed, force a fresh render
   if (mentorLoaded) {
@@ -101,7 +101,7 @@ async function loadClientData() {
     clientHeaders = headers;
     renderTable(headers, rows);
     // Show Add Client controls for CIC members and reset to initial button state
-    document.getElementById('add-client-controls').classList.toggle('hidden', !isCICMember);
+    document.getElementById('add-client-controls')?.classList.toggle('hidden', !isCICMember);
     document.getElementById('add-client-btn').classList.remove('hidden');
     document.getElementById('commit-client-btn').classList.add('hidden');
     document.getElementById('cancel-client-btn').classList.add('hidden');

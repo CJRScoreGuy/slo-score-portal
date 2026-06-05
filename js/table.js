@@ -60,6 +60,11 @@ function renderTable(headers, rows) {
 // ─── FILTER BAR ───────────────────────────────────────────────────────────────
 function buildFilterBar(headers) {
   const bar = document.getElementById('filter-bar');
+
+  // Detach Add Client controls before clearing so innerHTML doesn't destroy it
+  const addClientControls = document.getElementById('add-client-controls');
+  if (addClientControls) addClientControls.remove();
+
   bar.innerHTML = '';
 
   // Identify which headers match the filter columns
@@ -101,8 +106,7 @@ function buildFilterBar(headers) {
     bar.appendChild(clearBtn);
   }
 
-  // Move Add Client controls next to Clear Filters
-  const addClientControls = document.getElementById('add-client-controls');
+  // Re-attach Add Client controls next to Clear Filters
   if (addClientControls) bar.appendChild(addClientControls);
 }
 
