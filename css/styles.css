@@ -776,6 +776,45 @@ button {
   color: #5f6368;
 }
 
+#cm-table-wrap {
+  flex: 1;
+  overflow: auto;
+  padding: 0 24px 16px;
+}
+
+#cm-table {
+  min-width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  font-size: 15px;
+}
+
+#cm-table thead th:first-child { border-radius: 6px 0 0 0; }
+#cm-table thead th:last-child  { border-radius: 0 6px 0 0; }
+
+#cm-table thead th {
+  background: #1a73e8;
+  color: #fff;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 500;
+  font-size: 18px;
+  white-space: normal;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+#cm-table tbody td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f3f4;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+#cm-table tbody tr:hover { background: #e8f0fe; }
+
 #mentor-table-wrap {
   flex: 1;
   overflow: auto;

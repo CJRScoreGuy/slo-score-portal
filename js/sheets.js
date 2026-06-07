@@ -153,6 +153,14 @@ async function fetchClientRow(dataRowIndex) {
   return (data.values || [[]])[0] || [];
 }
 
+// ─── FETCH CALENDAR AUDIT ─────────────────────────────────────────────────────
+async function fetchCalendarAuditData() {
+  const range = 'Calendar Audit!A1:Z';
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}/values/${encodeURIComponent(range)}`;
+  const data = await apiFetch(url);
+  return normalizeValues(data.values || []);
+}
+
 // ─── FETCH MENTOR STATUS ROWS (for card join) ─────────────────────────────────
 async function fetchMentorStatusRows() {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}/values/${encodeURIComponent(MENTOR_RANGE)}`;

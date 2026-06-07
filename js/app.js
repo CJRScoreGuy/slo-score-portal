@@ -31,6 +31,7 @@ async function onSignedIn(userInfo) {
   // Reset tab-load flags so CIC status is re-evaluated on every sign-in
   mentorLoaded = false;
   mentorInfoLoaded = false;
+  clientMeetingsLoaded = false;
 
   // Show app and load client data immediately — don't block on CIC check
   document.getElementById('login-screen').classList.add('hidden');
@@ -59,6 +60,7 @@ async function onSignedIn(userInfo) {
 let currentTab = 'clients';
 let mentorLoaded = false;
 let mentorInfoLoaded = false;
+let clientMeetingsLoaded = false;
 
 function switchTab(tab) {
   currentTab = tab;
@@ -76,6 +78,8 @@ function switchTab(tab) {
     if (!mentorLoaded) loadMentorData();
   } else if (tab === 'mentor-info') {
     if (!mentorInfoLoaded) loadMentorInfoTab();
+  } else if (tab === 'client-meetings') {
+    if (!clientMeetingsLoaded) loadClientMeetingsTab();
   }
 }
 
@@ -88,6 +92,9 @@ function refreshCurrentTab() {
   } else if (currentTab === 'mentor-info') {
     mentorInfoLoaded = false;
     loadMentorInfoTab();
+  } else if (currentTab === 'client-meetings') {
+    clientMeetingsLoaded = false;
+    loadClientMeetingsTab();
   }
 }
 

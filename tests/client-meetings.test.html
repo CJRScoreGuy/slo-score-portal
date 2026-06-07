@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Client Meetings — Unit Tests</title>
+  <style>
+    body { font-family: monospace; padding: 24px; background: #f8f9fa; }
+    h1 { font-size: 18px; margin-bottom: 16px; }
+    .suite { margin-bottom: 24px; }
+    .suite-name { font-weight: bold; font-size: 15px; margin-bottom: 8px; }
+    .pass { color: #137333; }
+    .fail { color: #d93025; }
+    .summary { margin-top: 24px; font-size: 15px; font-weight: bold; }
+  </style>
+</head>
+<body>
+<h1>Client Meetings Unit Tests</h1>
+<div id="results"></div>
+
+<script>
+// ─── INLINE COPIES OF PURE FUNCTIONS UNDER TEST ───────────────────────────────
+
+function formatMeetingDate(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return value;
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  return `${mm}/${dd}/${yyyy}`;
+}
+
+function buildClientMeetingRows(calendarRows, calendarHeaders, nameByEmail) {
+  const emailHeader   = calendarHeaders.find(h => h.toLowerCase().trim() === 'email');
+  const dateHeader    = calendarHeaders.find(h => h.toLowerCase().trim() === 'date');
+  const timeHeader    = calendarHeaders.find(h => h.toLowerCase().trim() === 'time');
+  const subjectHeader = calendarHeaders.find(h => h.toLowerCase().trim() === 'subject');
+  const guestsHeader  = calendarHeaders.find(h => h.toLowerCase().trim() === 'guests');
+
+  const rows = calendarRows.map(row => {
+    const email = emailHeader ? (row[emailHeader] || '').toLowerCase().trim() : '';
+    return {
+      name:     nameByEmail[email] || email,
+      date:     formatMeetingDate(dateHeader    ? row[dateHeader]    : ''),
+      time:     timeHeader    ? (row[timeHeader]    || '') : '',
+      subject:  subjectHeader ? (row[subjectHeader] || '') : '',
+      invitees: guestsHeader  ? (row[guestsHeader]  || '') : ''
+    };
+  });
+
+  rows.sort((a, b) => a.name.localeCompare(b.name));
+  return rows;
+}
+
+// ─── MINIMAL TEST HARNESS ─────────────────────────────────────────────────────
+let passed = 0;
+let failed = 0;
+const results = document.getElementById('results');
+
+function suite(name, fn) {
+  const div = document.createElement('div');
+  div.className = 'suite';
+  const title = document.createElement('div');
+  title.className = 'suite-name';
+  title.textContent = name;
+  div.appendChild(title);
+  const container = { el: div };
+  fn(container);
+  results.appendChild(div);
+}
+
+function test(ctx, label, actual, expected) {
+  const ok = JSON.stringify(actual) === JSON.stringify(expected);
+  const line = document.createElement('div');
+  line.className = ok ? 'pass' : 'fail';
+  line.textContent = (ok ? '✓ ' : '✗ ') + label +
+    (ok ? '' : `\n  expected: ${JSON.stringify(expected)}\n  got:      ${JSON.stringify(actual)}`);
+  ctx.el.appendChild(line);
+  ok ? passed++ : failed++;
+}
+
+// ─── SUITE: formatMeetingDate ─────────────────────────────────────────────────
+suite('formatMeetingDate', ctx => {
+  test(ctx, 'empty string returns empty string',
+    formatMeetingDate(''), '');
+
+  test(ctx, 'null/undefined-like empty returns empty',
+    formatMeetingDate(null), '');
+
+  test(ctx, 'slash-delimited M/D/YYYY is zero-padded',
+    formatMeetingDate('5/7/2026'), '05/07/2026');
+
+  test(ctx, 'already padded MM/DD/YYYY passes through correctly',
+    formatMeetingDate('05/31/2026'), '05/31/2026');
+
+  test(ctx, 'ISO YYYY-MM-DD is reformatted',
+    formatMeetingDate('2026-06-07'), '06/07/2026');
+
+  test(ctx, 'invalid string is returned as-is',
+    formatMeetingDate('not a date'), 'not a date');
+
+  test(ctx, 'December date is formatted correctly',
+    formatMeetingDate('12/31/2026'), '12/31/2026');
+});
+
+// ─── SUITE: buildClientMeetingRows — name lookup ──────────────────────────────
+suite('buildClientMeetingRows — name lookup', ctx => {
+  const headers = ['Email', 'Date', 'Time', 'Subject', 'Guests'];
+  const nameByEmail = { 'alice@example.com': 'Alice Smith', 'bob@example.com': 'Bob Jones' };
+
+  const rows = buildClientMeetingRows([
+    { Email: 'alice@example.com', Date: '6/1/2026', Time: '10:00 AM', Subject: 'Q2 Review', Guests: 'guest1@x.com' },
+    { Email: 'UNKNOWN@example.com', Date: '6/2/2026', Time: '11:00 AM', Subject: 'Intro', Guests: '' }
+  ], headers, nameByEmail);
+
+  test(ctx, 'matched email resolves to name',
+    rows.find(r => r.subject === 'Q2 Review').name, 'Alice Smith');
+
+  test(ctx, 'unmatched email falls back to email string',
+    rows.find(r => r.subject === 'Intro').name, 'unknown@example.com');
+
+  test(ctx, 'date is formatted MM/DD/YYYY',
+    rows.find(r => r.subject === 'Q2 Review').date, '06/01/2026');
+
+  test(ctx, 'guests mapped to invitees',
+    rows.find(r => r.subject === 'Q2 Review').invitees, 'guest1@x.com');
+
+  test(ctx, 'empty guests yields empty invitees',
+    rows.find(r => r.subject === 'Intro').invitees, '');
+});
+
+// ─── SUITE: buildClientMeetingRows — sorting ──────────────────────────────────
+suite('buildClientMeetingRows — sort by name', ctx => {
+  const headers = ['Email', 'Date', 'Time', 'Subject', 'Guests'];
+  const nameByEmail = {
+    'z@example.com': 'Zelda',
+    'a@example.com': 'Alice',
+    'm@example.com': 'Mary'
+  };
+
+  const rows = buildClientMeetingRows([
+    { Email: 'z@example.com', Date: '', Time: '', Subject: '', Guests: '' },
+    { Email: 'a@example.com', Date: '', Time: '', Subject: '', Guests: '' },
+    { Email: 'm@example.com', Date: '', Time: '', Subject: '', Guests: '' }
+  ], headers, nameByEmail);
+
+  test(ctx, 'first row is Alice (alphabetically first)',
+    rows[0].name, 'Alice');
+
+  test(ctx, 'second row is Mary',
+    rows[1].name, 'Mary');
+
+  test(ctx, 'third row is Zelda',
+    rows[2].name, 'Zelda');
+});
+
+// ─── SUITE: buildClientMeetingRows — empty input ──────────────────────────────
+suite('buildClientMeetingRows — edge cases', ctx => {
+  test(ctx, 'empty calendar rows produces empty array',
+    buildClientMeetingRows([], ['Email', 'Date', 'Time', 'Subject', 'Guests'], {}), []);
+
+  const headers = ['Email', 'Date', 'Time', 'Subject', 'Guests'];
+  const rows = buildClientMeetingRows([
+    { Email: '', Date: '', Time: '', Subject: '', Guests: '' }
+  ], headers, {});
+
+  test(ctx, 'row with no email falls back to empty string as name',
+    rows[0].name, '');
+
+  test(ctx, 'missing date column returns empty string',
+    buildClientMeetingRows(
+      [{ Email: 'x@y.com' }],
+      ['Email'],
+      {}
+    )[0].date, '');
+});
+
+// ─── SUMMARY ──────────────────────────────────────────────────────────────────
+const summary = document.createElement('div');
+summary.className = 'summary';
+summary.style.color = failed === 0 ? '#137333' : '#d93025';
+summary.textContent = `${passed + failed} tests — ${passed} passed, ${failed} failed`;
+results.appendChild(summary);
+</script>
+</body>
+</html>
