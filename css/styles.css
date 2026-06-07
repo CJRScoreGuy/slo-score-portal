@@ -815,6 +815,11 @@ button {
 
 #cm-table tbody tr:hover { background: #e8f0fe; }
 
+#cm-table td.cm-invitees {
+  white-space: normal;
+  min-width: 180px;
+}
+
 #mentor-table-wrap {
   flex: 1;
   overflow: auto;

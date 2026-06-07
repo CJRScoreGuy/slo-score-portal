@@ -62,7 +62,18 @@ function renderClientMeetingsTable(rows) {
       tr.className = i % 2 === 0 ? 'row-even' : 'row-odd';
       ['name', 'date', 'time', 'subject', 'invitees'].forEach(key => {
         const td = document.createElement('td');
-        td.textContent = row[key] || '';
+        if (key === 'invitees') {
+          td.className = 'cm-invitees';
+          (row[key] || '').split(',').forEach(invitee => {
+            const trimmed = invitee.trim();
+            if (!trimmed) return;
+            const div = document.createElement('div');
+            div.textContent = trimmed;
+            td.appendChild(div);
+          });
+        } else {
+          td.textContent = row[key] || '';
+        }
         tr.appendChild(td);
       });
       tbody.appendChild(tr);
