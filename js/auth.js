@@ -69,8 +69,8 @@ async function handleTokenResponse(response) {
       accessToken = null;
       document.getElementById('app-screen').classList.add('hidden');
       document.getElementById('loading').classList.add('hidden');
-      document.getElementById('login-screen').classList.remove('hidden');
-      showError(`Access restricted to @${ALLOWED_DOMAIN} accounts. You signed in as: ${email}`);
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('access-denied-screen').classList.remove('hidden');
       return;
     }
 
