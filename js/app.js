@@ -46,6 +46,9 @@ async function onSignedIn(userInfo) {
     isCICMember = false;
   }
 
+  // Re-render client table so Reset Mentor / Get Mentor buttons reflect CIC status
+  if (clientHeaders.length && allRows.length) renderTable(clientHeaders, allRows);
+
   // Update Add Client button with the now-known CIC status
   document.getElementById('add-client-controls')?.classList.toggle('hidden', !isCICMember);
 
