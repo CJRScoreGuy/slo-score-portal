@@ -50,7 +50,7 @@ let filterValues = {}; // { normalizedHeader: filterString }
 function renderTable(headers, rows) {
   allHeaders = headers;
 
-  // Default sort: date submitted ascending (oldest first)
+  // Default sort: date submitted descending (newest first)
   const dateHeader = headers.find(h => h.toLowerCase().trim() === 'date submitted');
   if (dateHeader) {
     rows = [...rows].sort((a, b) => {
@@ -59,7 +59,7 @@ function renderTable(headers, rows) {
       if (!av && !bv) return 0;
       if (!av) return 1;  // blank dates sink to bottom
       if (!bv) return -1;
-      return av < bv ? -1 : av > bv ? 1 : 0;
+      return av > bv ? -1 : av < bv ? 1 : 0;
     });
   }
 
