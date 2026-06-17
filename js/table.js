@@ -35,6 +35,7 @@ const FILTER_COLUMNS = [
   'email',
   'name',
   'date submitted',
+  'need mentor',
   'mentor 1',
   'mentor 2',
   'mentor 3',
