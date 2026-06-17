@@ -49,6 +49,20 @@ let filterValues = {}; // { normalizedHeader: filterString }
 // ─── RENDER TABLE ─────────────────────────────────────────────────────────────
 function renderTable(headers, rows) {
   allHeaders = headers;
+
+  // Default sort: date submitted ascending (oldest first)
+  const dateHeader = headers.find(h => h.toLowerCase().trim() === 'date submitted');
+  if (dateHeader) {
+    rows = [...rows].sort((a, b) => {
+      const av = a[dateHeader] || '';
+      const bv = b[dateHeader] || '';
+      if (!av && !bv) return 0;
+      if (!av) return 1;  // blank dates sink to bottom
+      if (!bv) return -1;
+      return av < bv ? -1 : av > bv ? 1 : 0;
+    });
+  }
+
   allRows = rows;
   filterValues = {};
 
