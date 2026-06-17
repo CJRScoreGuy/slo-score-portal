@@ -59,7 +59,9 @@ function renderTable(headers, rows) {
       if (!av && !bv) return 0;
       if (!av) return 1;  // blank dates sink to bottom
       if (!bv) return -1;
-      return av > bv ? -1 : av < bv ? 1 : 0;
+      const at = new Date(av).getTime();
+      const bt = new Date(bv).getTime();
+      return bt - at;  // descending: newest first
     });
   }
 
