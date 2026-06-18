@@ -144,6 +144,18 @@ async function clearClientMentorColumns(clientRowIndex, headers) {
   );
 }
 
+// ─── UPDATE A SINGLE CELL IN CLIENT TRACKING ─────────────────────────────────
+async function updateClientCell(dataRowIndex, colLetter, value) {
+  const sheetRow = dataRowIndex + 2;
+  const range = encodeURIComponent(`${SHEET_NAME}!${colLetter}${sheetRow}`);
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${range}?valueInputOption=RAW`;
+  await apiFetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ values: [[value]] })
+  });
+}
+
 // ─── FETCH SINGLE CLIENT ROW ─────────────────────────────────────────────────
 async function fetchClientRow(dataRowIndex) {
   const sheetRow = dataRowIndex + 2;

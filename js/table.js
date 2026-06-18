@@ -387,8 +387,12 @@ function onResetClient(row, btn) {
       // Set Mentor Assigned to 0
       await updateMentorAssignmentsCell(maRow._rowIndex, colIndexToLetter(mentorAssignedIdx), 0);
 
-      // Clear Mentor 1–5 in Client Tracking
+      // Clear Mentor 1–5 in Client Tracking and set Need Mentor to YES
       await clearClientMentorColumns(row._rowIndex, allHeaders);
+      const needMentorIdx = allHeaders.findIndex(h => h.toLowerCase().trim() === 'need mentor');
+      if (needMentorIdx >= 0) {
+        await updateClientCell(row._rowIndex, colIndexToLetter(needMentorIdx), 'YES');
+      }
 
       // Step 3: Fetch updated row data and refresh only this row in the table
       const rawCells = await fetchClientRow(row._rowIndex);
