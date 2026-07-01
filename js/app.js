@@ -32,11 +32,12 @@ async function onSignedIn(userInfo) {
   mentorLoaded = false;
   mentorInfoLoaded = false;
   clientMeetingsLoaded = false;
+  dashboardLoaded = false;
 
-  // Show app and load client data immediately — don't block on CIC check
+  // Show app and load dashboard immediately — don't block on CIC check
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app-screen').classList.remove('hidden');
-  switchTab('clients');
+  switchTab('dashboard');
 
   // CIC check runs in background; update dependent UI when done
   try {
@@ -60,7 +61,8 @@ async function onSignedIn(userInfo) {
 }
 
 // ─── TAB SWITCHING ────────────────────────────────────────────────────────────
-let currentTab = 'clients';
+let currentTab = 'dashboard';
+let dashboardLoaded = false;
 let mentorLoaded = false;
 let mentorInfoLoaded = false;
 let clientMeetingsLoaded = false;
@@ -75,7 +77,9 @@ function switchTab(tab) {
     panel.classList.toggle('hidden', panel.dataset.tab !== tab);
   });
 
-  if (tab === 'clients') {
+  if (tab === 'dashboard') {
+    if (!dashboardLoaded) loadDashboardTab();
+  } else if (tab === 'clients') {
     loadClientData();
   } else if (tab === 'mentor-calendar') {
     if (!mentorLoaded) loadMentorData();
@@ -87,7 +91,10 @@ function switchTab(tab) {
 }
 
 function refreshCurrentTab() {
-  if (currentTab === 'clients') {
+  if (currentTab === 'dashboard') {
+    dashboardLoaded = false;
+    loadDashboardTab();
+  } else if (currentTab === 'clients') {
     loadClientData();
   } else if (currentTab === 'mentor-calendar') {
     mentorLoaded = false;

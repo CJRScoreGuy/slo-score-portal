@@ -195,7 +195,7 @@ async function updateClientTrackingCell(rowIndex, colLetter, value) {
 // ─── APPS SCRIPT ──────────────────────────────────────────────────────────────
 // APPS_SCRIPT_ID is a public deployment identifier, not a secret — safe to store here
 // since this is client-side JS with no server-side secret store available.
-const APPS_SCRIPT_ID = 'AKfycbzFW55wo6_mlmrOoAycBR6A474NPDgBb_TfFFVz-eIqchbI1NR3yEg0URPcXJKKofE';
+const APPS_SCRIPT_ID = 'AKfycbweaqYv5Fp3Q3G5SsXnKrqcQBBd8BVbzxqWDz-6Mb5eRZW3GHRKDKDjN3IzlnNaLWIj';
 
 async function checkCICMembership(email) {
   const url = `https://script.googleapis.com/v1/scripts/${APPS_SCRIPT_ID}:run`;
@@ -217,8 +217,10 @@ async function checkCICMembership(email) {
   return isMember;
 }
 
+const GET_MENTOR_SCRIPT_ID = 'AKfycbwAtT8vH5B0o8C2c2TZ2Z3cpVm8KUwafUUinGpHNVHfF88Vjb_21EndFIKHl4dYsBQF';
+
 async function runGetMentorScript(clientEmail) {
-  const url = `https://script.googleapis.com/v1/scripts/${APPS_SCRIPT_ID}:run`;
+  const url = `https://script.googleapis.com/v1/scripts/${GET_MENTOR_SCRIPT_ID}:run`;
   return await apiFetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -292,6 +294,21 @@ async function writeClientRow(values) {
       body: JSON.stringify({ values: [values] })
     }
   );
+}
+
+// ─── SEND EMAIL VIA APPS SCRIPT ───────────────────────────────────────────────
+async function sendReassignEmail(to, subject, body, replyTo) {
+  const url = `https://script.googleapis.com/v1/scripts/${APPS_SCRIPT_ID}:run`;
+  const result = await apiFetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      function: 'sendReassignEmail',
+      parameters: [to, subject, body, replyTo],
+      devMode: false
+    })
+  });
+  if (result.error) throw new Error(result.error.details?.[0]?.errorMessage || JSON.stringify(result.error));
 }
 
 // ─── COLUMN INDEX TO A1 LETTER ────────────────────────────────────────────────

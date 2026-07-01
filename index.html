@@ -46,14 +46,56 @@
 
     <!-- Tab bar -->
     <nav class="tab-bar">
-      <button class="tab-btn active" data-tab="clients">SCORE Clients</button>
+      <button class="tab-btn active" data-tab="dashboard">My Dashboard</button>
+      <button class="tab-btn" data-tab="clients">SCORE Clients</button>
       <button class="tab-btn" data-tab="mentor-calendar">Mentor Calendar</button>
       <button class="tab-btn" data-tab="mentor-info">Mentor Information</button>
       <button class="tab-btn" data-tab="client-meetings">Client Meetings</button>
     </nav>
 
+    <!-- ── TAB: DASHBOARD ─────────────────────────────────────────────── -->
+    <div class="tab-panel" data-tab="dashboard">
+
+      <div id="dashboard-error" class="hidden data-error-msg"></div>
+
+      <div id="dashboard-loading">
+        <div class="spinner"></div>
+        <span>Loading dashboard…</span>
+      </div>
+
+      <div id="dashboard-content" class="hidden">
+
+        <section class="dashboard-section">
+          <h2>Upcoming Score Meetings</h2>
+          <table class="dashboard-table">
+            <thead>
+              <tr><th>Date</th><th>Time</th><th>Subject</th><th>Invitees</th></tr>
+            </thead>
+            <tbody id="dashboard-meetings-body"></tbody>
+          </table>
+        </section>
+
+        <section class="dashboard-section">
+          <h2>My Lead Mentor Clients</h2>
+          <table class="dashboard-table">
+            <thead>
+              <tr><th>Name</th><th>Email</th><th>Date Submitted</th><th></th></tr>
+            </thead>
+            <tbody id="dashboard-clients-body"></tbody>
+          </table>
+        </section>
+
+        <section class="dashboard-section">
+          <h2>Weeks Marked Unavailable</h2>
+          <ul id="dashboard-unavailable-list" class="dashboard-unavail-list"></ul>
+        </section>
+
+      </div>
+
+    </div>
+
     <!-- ── TAB: SCORE CLIENTS ─────────────────────────────────────────── -->
-    <div class="tab-panel" data-tab="clients">
+    <div class="tab-panel hidden" data-tab="clients">
 
       <div class="toolbar">
         <div id="filter-bar"></div>
@@ -148,7 +190,8 @@
   <script src="js/mentor.js"></script>
   <script src="js/mentor-info.js"></script>
   <script src="js/client-meetings.js"></script>
-<script src="js/app.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/app.js"></script>
   <script src="https://accounts.google.com/gsi/client" onload="initApp()" async defer></script>
 
   <script>
