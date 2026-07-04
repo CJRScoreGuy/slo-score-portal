@@ -297,6 +297,24 @@ async function sendReassignEmail(to, subject, body, replyTo) {
   if (result.error) throw new Error(result.error.details?.[0]?.errorMessage || JSON.stringify(result.error));
 }
 
+// ─── LOG PORTAL ACTIVITY ──────────────────────────────────────────────────────
+// Appends a row to the "Portal Log" sheet in the Mentor Information spreadsheet.
+// Fails silently — never disrupts the app if the write fails.
+async function logActivity(email, tab) {
+  const timestamp = new Date().toLocaleString('en-US');
+  const range = encodeURIComponent('Portal Log!A:C');
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}/values/${range}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+  try {
+    await apiFetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [[email, tab, timestamp]] })
+    });
+  } catch (err) {
+    console.warn('[Log] Failed to log activity:', err.message);
+  }
+}
+
 // ─── COLUMN INDEX TO A1 LETTER ────────────────────────────────────────────────
 function colIndexToLetter(idx) {
   let letter = '';

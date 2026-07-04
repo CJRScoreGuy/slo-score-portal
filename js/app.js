@@ -2,6 +2,14 @@
 let isCICMember = false;
 let signedInEmail = '';
 
+const TAB_NAMES = {
+  dashboard: 'My Dashboard',
+  clients: 'SCORE Clients',
+  'mentor-calendar': 'Mentor Calendar',
+  'mentor-info': 'Mentor Information',
+  'client-meetings': 'Client Meetings'
+};
+
 // ─── ADD CLIENT STATE ─────────────────────────────────────────────────────────
 let clientHeaders = [];
 const REQUIRED_CLIENT_FIELDS = ['email', 'name', 'phone', 'preferred contact', 'date submitted'];
@@ -27,6 +35,7 @@ function initApp() {
 async function onSignedIn(userInfo) {
   signedInEmail = userInfo.email || '';
   document.getElementById('user-email').textContent = signedInEmail;
+  logActivity(signedInEmail, 'Login');
 
   // Reset tab-load flags so CIC status is re-evaluated on every sign-in
   mentorLoaded = false;
@@ -69,6 +78,7 @@ let clientMeetingsLoaded = false;
 
 function switchTab(tab) {
   currentTab = tab;
+  if (signedInEmail) logActivity(signedInEmail, TAB_NAMES[tab] || tab);
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tab);
