@@ -4,23 +4,44 @@ const MENTOR_READONLY_COLUMNS = ['email', 'name', 'status', 'activity', 'availab
 // Columns always hidden in Mentor Calendar (moved to Mentor Information cards)
 const MENTOR_FORCE_HIDDEN = ['status', 'activity'];
 
+// Returns the Sunday that is 2 weeks before today (local time)
+function calendarStartDate() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - 14);
+  d.setDate(d.getDate() - d.getDay()); // back to Sunday
+  return d;
+}
+
+// Parses a column header in M/D/YYYY format; returns a Date or null
+function parseHeaderDate(header) {
+  const parts = header.trim().split('/');
+  if (parts.length !== 3) return null;
+  const [m, d, y] = parts.map(Number);
+  if (isNaN(m) || isNaN(d) || isNaN(y) || y < 2000) return null;
+  return new Date(y, m - 1, d);
+}
+
 let mentorHeaders = [];
 let mentorHeaderIndices = {};
 let mentorVisibleCols = [];
 
 // ─── RENDER MENTOR TABLE ──────────────────────────────────────────────────────
-function renderMentorTable(headers, rows, hiddenCols = new Set()) {
+function renderMentorTable(headers, rows) {
   mentorHeaders = headers;
   mentorHeaderIndices = {};
   headers.forEach((h, i) => { mentorHeaderIndices[h] = i; });
 
-  // Visible columns only (preserve original index for write-back)
+  // Visible columns: non-force-hidden; date columns only shown from 2 Sundays prior onward
+  const startDate = calendarStartDate();
   mentorVisibleCols = headers
     .map((h, i) => ({ header: h, colIdx: i }))
-    .filter(({ header, colIdx }) =>
-      !hiddenCols.has(colIdx) &&
-      !MENTOR_FORCE_HIDDEN.includes(header.toLowerCase().trim())
-    );
+    .filter(({ header }) => {
+      if (MENTOR_FORCE_HIDDEN.includes(header.toLowerCase().trim())) return false;
+      const d = parseHeaderDate(header);
+      if (d !== null) return d >= startDate;
+      return true; // non-date columns always shown
+    });
 
   const table = document.getElementById('mentor-table');
   table.innerHTML = '';

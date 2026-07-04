@@ -282,7 +282,7 @@ async function loadMentorData() {
   document.getElementById('mentor-error').classList.add('hidden');
 
   try {
-    const [{ headers, rows, hiddenCols }, assignmentsResp] = await Promise.all([
+    const [{ headers, rows }, assignmentsResp] = await Promise.all([
       fetchMentorData(),
       fetchMentorAssignmentsData()
     ]);
@@ -320,7 +320,7 @@ async function loadMentorData() {
       });
     }
 
-    renderMentorTable(headers, rows, hiddenCols);
+    renderMentorTable(headers, rows);
     mentorLoaded = true;
   } catch (err) {
     document.getElementById('mentor-loading').classList.add('hidden');

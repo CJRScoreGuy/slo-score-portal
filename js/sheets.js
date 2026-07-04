@@ -57,23 +57,9 @@ async function fetchSheetData() {
 
 // ─── FETCH MENTOR STATUS ──────────────────────────────────────────────────────
 async function fetchMentorData() {
-  // Fetch column visibility metadata and values in parallel
-  const metaUrl = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}`
-    + `?includeGridData=true&ranges=${encodeURIComponent(MENTOR_SHEET_NAME + '!A1:BE1')}`
-    + `&fields=sheets(properties.title,data.columnMetadata)`;
-
-  const valuesUrl = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}/values/${encodeURIComponent(MENTOR_RANGE)}`;
-
-  const [meta, data] = await Promise.all([apiFetch(metaUrl), apiFetch(valuesUrl)]);
-
-  // Build set of hidden column indices
-  const sheet = (meta.sheets || []).find(s => s.properties.title === MENTOR_SHEET_NAME);
-  const colMeta = sheet?.data?.[0]?.columnMetadata || [];
-  const hiddenCols = new Set(
-    colMeta.map((col, i) => col.hiddenByUser ? i : -1).filter(i => i >= 0)
-  );
-
-  return { ...normalizeValues(data.values || []), hiddenCols };
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}/values/${encodeURIComponent(MENTOR_RANGE)}`;
+  const data = await apiFetch(url);
+  return normalizeValues(data.values || []);
 }
 
 // ─── FETCH SINGLE MENTOR ROW ──────────────────────────────────────────────────

@@ -63,7 +63,7 @@ async function loadDashboardTab() {
     renderDashboardClients(myClients, clientResp.headers, myName);
 
     // ── 3. Weeks marked unavailable ───────────────────────────────────────────
-    renderDashboardUnavailable(myStatusRow, statusResp.headers, statusResp.hiddenCols || new Set());
+    renderDashboardUnavailable(myStatusRow, statusResp.headers);
 
     content.classList.remove('hidden');
     dashboardLoaded = true;
@@ -244,7 +244,7 @@ function onAssignToCIC(row, headers, mentor1ColIdx, mentorName, btn, td) {
 }
 
 // ─── RENDER: UNAVAILABLE WEEKS ────────────────────────────────────────────────
-function renderDashboardUnavailable(statusRow, headers, hiddenCols) {
+function renderDashboardUnavailable(statusRow, headers) {
   const list = document.getElementById('dashboard-unavailable-list');
 
   if (!statusRow) {
@@ -255,16 +255,13 @@ function renderDashboardUnavailable(statusRow, headers, hiddenCols) {
     return;
   }
 
-  // Week columns are non-readonly, non-hidden; TRUE = marked unavailable
-  const readonlySet = new Set([...MENTOR_READONLY_COLUMNS, ...MENTOR_FORCE_HIDDEN]);
+  // Week columns are date-format headers (M/D/YYYY) from 2 Sundays prior onward; TRUE = marked unavailable
+  const startDate = calendarStartDate();
   const unavailableWeeks = headers
-    .map((h, i) => ({ header: h, colIdx: i }))
-    .filter(({ header, colIdx }) =>
-      !hiddenCols.has(colIdx) &&
-      !readonlySet.has(header.toLowerCase().trim()) &&
-      (statusRow[header] || '').toString().toUpperCase() === 'TRUE'
-    )
-    .map(({ header }) => header);
+    .filter(header => {
+      const d = parseHeaderDate(header);
+      return d !== null && d >= startDate && (statusRow[header] || '').toString().toUpperCase() === 'TRUE';
+    });
 
   if (unavailableWeeks.length === 0) {
     const li = document.createElement('li');
