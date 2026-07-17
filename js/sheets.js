@@ -181,7 +181,7 @@ async function updateClientTrackingCell(rowIndex, colLetter, value) {
 // ─── APPS SCRIPT ──────────────────────────────────────────────────────────────
 // APPS_SCRIPT_ID is a public deployment identifier, not a secret — safe to store here
 // since this is client-side JS with no server-side secret store available.
-const APPS_SCRIPT_ID = 'AKfycbyym8R3PVR8KHwah5WHVBRQzYR_4RDd8-xlhblxxom8Az_dz_UrHcNLMoQC9-QwRl61PQ';
+const APPS_SCRIPT_ID = 'AKfycbzILYR4FIglzMEfDNfOE7P5n6IY14Riscl-TNeEEJ6taOSBXYqnT7tnxcnAGuVmLaNXDA';
 
 async function checkCICMembership(email) {
   const url = `https://script.googleapis.com/v1/scripts/${APPS_SCRIPT_ID}:run`;
