@@ -56,7 +56,7 @@ async function loadDashboardTab() {
     const myClients = myName && mentor1Header
       ? clientResp.rows.filter(row =>
           (row[mentor1Header] || '').trim().toLowerCase() === myName.toLowerCase() &&
-          needMentorHeader && (row[needMentorHeader] || '').trim().toUpperCase() === 'YES'
+          needMentorHeader && ['YES', 'DIRECT'].includes((row[needMentorHeader] || '').trim().toUpperCase())
         )
       : [];
 
