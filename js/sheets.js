@@ -203,10 +203,8 @@ async function checkCICMembership(email) {
   return isMember;
 }
 
-const GET_MENTOR_SCRIPT_ID = 'AKfycbwAtT8vH5B0o8C2c2TZ2Z3cpVm8KUwafUUinGpHNVHfF88Vjb_21EndFIKHl4dYsBQF';
-
 async function runGetMentorScript(clientEmail) {
-  const url = `https://script.googleapis.com/v1/scripts/${GET_MENTOR_SCRIPT_ID}:run`;
+  const url = `https://script.googleapis.com/v1/scripts/${APPS_SCRIPT_ID}:run`;
   return await apiFetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
