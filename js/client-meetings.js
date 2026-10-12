@@ -1,7 +1,9 @@
 // ─── DATE FORMATTING ──────────────────────────────────────────────────────────
 function formatMeetingDate(value) {
   if (!value) return '';
-  const d = new Date(value);
+  // ISO YYYY-MM-DD — parse as local time to avoid UTC day-shift
+  const iso = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const d = iso ? new Date(+iso[1], +iso[2] - 1, +iso[3]) : new Date(value);
   if (isNaN(d.getTime())) return value;
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');

@@ -1,3 +1,10 @@
+// Parse a date string as local time (avoids UTC day-shift for ISO YYYY-MM-DD strings)
+function parseDateLocal(value) {
+  if (!value) return new Date(NaN);
+  const iso = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return iso ? new Date(+iso[1], +iso[2] - 1, +iso[3]) : new Date(value);
+}
+
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
 
 async function loadDashboardTab() {
@@ -37,10 +44,10 @@ async function loadDashboardTab() {
       .filter(row => {
         if (!emailHeader) return false;
         if ((row[emailHeader] || '').toLowerCase().trim() !== myEmail) return false;
-        const d = dateHeader ? new Date(row[dateHeader]) : null;
+        const d = dateHeader ? parseDateLocal(row[dateHeader]) : null;
         return d && !isNaN(d.getTime()) && d >= today;
       })
-      .sort((a, b) => new Date(a[dateHeader]) - new Date(b[dateHeader]));
+      .sort((a, b) => parseDateLocal(a[dateHeader]) - parseDateLocal(b[dateHeader]));
 
     renderDashboardMeetings(myMeetings, { dateHeader, timeHeader, subjectHeader, guestsHeader });
 
