@@ -7,7 +7,8 @@ const TAB_NAMES = {
   clients: 'SCORE Clients',
   'mentor-calendar': 'Mentor Calendar',
   'mentor-info': 'Mentor Information',
-  'client-meetings': 'Client Meetings'
+  'client-meetings': 'Client Meetings',
+  administration: 'Administration'
 };
 
 // ─── ADD CLIENT STATE ─────────────────────────────────────────────────────────
@@ -42,6 +43,10 @@ async function onSignedIn(userInfo) {
   mentorInfoLoaded = false;
   clientMeetingsLoaded = false;
   dashboardLoaded = false;
+  administrationLoaded = false;
+
+  // Hide Administration tab until CIC check resolves
+  document.querySelector('.tab-btn[data-tab="administration"]').classList.add('hidden');
 
   // Show app and load dashboard immediately — don't block on CIC check
   document.getElementById('login-screen').classList.add('hidden');
@@ -62,6 +67,9 @@ async function onSignedIn(userInfo) {
   // Update Add Client button with the now-known CIC status
   document.getElementById('add-client-controls')?.classList.toggle('hidden', !isCICMember);
 
+  // Show/hide Administration tab based on CIC membership
+  document.querySelector('.tab-btn[data-tab="administration"]').classList.toggle('hidden', !isCICMember);
+
   // If Mentor Calendar loaded before CIC check completed, force a fresh render
   if (mentorLoaded) {
     mentorLoaded = false;
@@ -75,6 +83,7 @@ let dashboardLoaded = false;
 let mentorLoaded = false;
 let mentorInfoLoaded = false;
 let clientMeetingsLoaded = false;
+let administrationLoaded = false;
 
 function switchTab(tab) {
   currentTab = tab;
@@ -97,6 +106,8 @@ function switchTab(tab) {
     if (!mentorInfoLoaded) loadMentorInfoTab();
   } else if (tab === 'client-meetings') {
     if (!clientMeetingsLoaded) loadClientMeetingsTab();
+  } else if (tab === 'administration') {
+    if (!administrationLoaded) loadAdminTab();
   }
 }
 
@@ -115,6 +126,9 @@ function refreshCurrentTab() {
   } else if (currentTab === 'client-meetings') {
     clientMeetingsLoaded = false;
     loadClientMeetingsTab();
+  } else if (currentTab === 'administration') {
+    administrationLoaded = false;
+    loadAdminTab();
   }
 }
 

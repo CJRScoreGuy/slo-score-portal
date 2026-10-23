@@ -1053,6 +1053,32 @@ button {
   padding: 0;
 }
 
+/* ─── ADMINISTRATION TAB ───────────────────────────────────────────────────── */
+.admin-section {
+  padding: 24px 24px 8px;
+}
+
+.admin-section-client {
+  border-top: 1px solid #e0e0e0;
+  margin-top: 8px;
+  padding-top: 32px;
+}
+
+.admin-section-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.admin-section-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1a73e8;
+  margin: 0;
+  white-space: nowrap;
+}
+
 /* ─── RESPONSIVE ───────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   header h1 { font-size: 15px; }
