@@ -1079,6 +1079,32 @@ button {
   white-space: nowrap;
 }
 
+.admin-mentor-list {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.admin-table th {
+  background: #f1f3f4;
+  color: #3c4043;
+  font-weight: 600;
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 2px solid #dadce0;
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid #e8eaed;
+  vertical-align: middle;
+}
+
 /* ─── RESPONSIVE ───────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   header h1 { font-size: 15px; }

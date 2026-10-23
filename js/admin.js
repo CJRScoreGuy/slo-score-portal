@@ -2,7 +2,6 @@
 
 let allAdminMentors = [];
 let allAdminClients = [];
-let adminClientHeaders = [];
 let adminListenersWired = false;
 
 // ─── LOAD ─────────────────────────────────────────────────────────────────────
@@ -15,7 +14,7 @@ async function loadAdminTab() {
   error.classList.add('hidden');
   content.classList.add('hidden');
 
-  document.getElementById('admin-mentor-grid').innerHTML = '';
+  document.getElementById('admin-mentor-list').innerHTML = '';
   document.getElementById('admin-client-grid').innerHTML = '';
 
   // Wire search listeners once
@@ -50,16 +49,23 @@ async function loadAdminTab() {
       if (email) assignmentsByEmail[email] = row;
     });
 
-    allAdminMentors = engage.rows.map(row => {
-      const email = (col(row, EMAIL_KEYS) || '').toLowerCase().trim();
-      const m = buildMentorObj(row, statusByEmail[email] || {}, assignmentsByEmail[email] || {});
-      // Search restricted to name, email, phone only
-      m.adminSearchText = [m.name, m.email, m.phone].join(' ').toLowerCase();
-      return m;
-    });
+    allAdminMentors = engage.rows
+      .map(row => {
+        const email = (col(row, EMAIL_KEYS) || '').toLowerCase().trim();
+        const sRow  = statusByEmail[email]      || {};
+        const aRow  = assignmentsByEmail[email] || {};
+        const m = buildMentorObj(row, sRow, aRow);
+        // Extra fields not in buildMentorObj
+        m.mentorAssigned = col(aRow, ['mentor assigned']) || '';
+        m.assignments    = col(aRow, ['assignments'])     || '';
+        // Search restricted to name, email, phone only
+        m.adminSearchText = [m.name, m.email, m.phone].join(' ').toLowerCase();
+        return m;
+      })
+      .filter(m => m.name)
+      .sort((a, b) => a.name.localeCompare(b.name));
 
     allAdminClients = clientResp.rows;
-    adminClientHeaders = clientResp.headers;
 
     renderAdminMentors(allAdminMentors);
     renderAdminClients(allAdminClients);
@@ -79,16 +85,44 @@ async function loadAdminTab() {
 
 // ─── RENDER MENTORS ───────────────────────────────────────────────────────────
 function renderAdminMentors(mentors) {
-  const grid  = document.getElementById('admin-mentor-grid');
+  const list  = document.getElementById('admin-mentor-list');
   const count = document.getElementById('admin-mentor-count');
-  grid.innerHTML = '';
-  const visible = mentors.filter(m => m.name);
-  count.textContent = `${visible.length} mentor${visible.length !== 1 ? 's' : ''}`;
-  if (visible.length === 0) {
-    grid.innerHTML = '<p class="mi-no-results">No mentors match your search.</p>';
+  list.innerHTML = '';
+  count.textContent = `${mentors.length} mentor${mentors.length !== 1 ? 's' : ''}`;
+
+  if (mentors.length === 0) {
+    list.innerHTML = '<p class="mi-no-results">No mentors match your search.</p>';
     return;
   }
-  visible.forEach(m => grid.appendChild(buildCard(m)));
+
+  const table = document.createElement('table');
+  table.className = 'admin-table';
+
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  ['Name', 'Email', 'Phone', 'Status', 'Activity', 'Mentor Assigned', 'Assignments', 'Mentor Reset']
+    .forEach(label => {
+      const th = document.createElement('th');
+      th.textContent = label;
+      headerRow.appendChild(th);
+    });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  mentors.forEach((m, i) => {
+    const tr = document.createElement('tr');
+    tr.className = i % 2 === 0 ? 'row-even' : 'row-odd';
+    [m.name, m.email, m.phone, m.mentorStatus, m.clientEngagement, m.mentorAssigned, m.assignments, m.clientCycle]
+      .forEach(val => {
+        const td = document.createElement('td');
+        td.textContent = val || '';
+        tr.appendChild(td);
+      });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  list.appendChild(table);
 }
 
 // ─── RENDER CLIENTS ───────────────────────────────────────────────────────────
@@ -97,10 +131,12 @@ function renderAdminClients(clients) {
   const count = document.getElementById('admin-client-count');
   grid.innerHTML = '';
   count.textContent = `${clients.length} client${clients.length !== 1 ? 's' : ''}`;
+
   if (clients.length === 0) {
     grid.innerHTML = '<p class="mi-no-results">No clients match your search.</p>';
     return;
   }
+
   clients.forEach(row => {
     const name  = col(row, NAME_KEYS)  || '';
     const email = col(row, EMAIL_KEYS) || '';
