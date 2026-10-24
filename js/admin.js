@@ -367,7 +367,7 @@ function startAdminMentorEdit(tr, m, editBtn) {
 
 // ─── CLIENT INLINE EDIT ───────────────────────────────────────────────────────
 function startAdminClientEdit(tr, row, editBtn) {
-  editBtn.classList.add('hidden');
+  editBtn.parentNode.querySelectorAll('button').forEach(b => b.classList.add('hidden'));
 
   const confirmBtn = document.createElement('button');
   confirmBtn.className = 'admin-confirm-btn';
@@ -433,8 +433,7 @@ function startAdminClientEdit(tr, row, editBtn) {
 
 // ─── CLIENT RESET MENTOR ──────────────────────────────────────────────────────
 function startAdminClientReset(nameTd, row, resetBtn, editBtn) {
-  resetBtn.classList.add('hidden');
-  editBtn.classList.add('hidden');
+  nameTd.querySelectorAll('button').forEach(b => b.classList.add('hidden'));
 
   const continueBtn = document.createElement('button');
   continueBtn.className = 'admin-confirm-btn';
