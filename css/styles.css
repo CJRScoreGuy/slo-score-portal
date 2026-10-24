@@ -127,19 +127,20 @@ button {
 #commit-client-btn {
   background: #137333;
   color: #fff;
-  font-size: 13px;
-  padding: 6px 14px;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 4px 10px;
 }
 #commit-client-btn:hover:not(:disabled) { background: #0d5226; }
 
 #cancel-client-btn {
-  background: #fff;
-  color: #5f6368;
-  border: 1px solid #dadce0;
-  font-size: 13px;
-  padding: 6px 14px;
+  background: #e53935;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 4px 10px;
 }
-#cancel-client-btn:hover:not(:disabled) { background: #f1f3f4; }
+#cancel-client-btn:hover:not(:disabled) { background: #b71c1c; }
 
 #commit-client-btn:disabled,
 #cancel-client-btn:disabled { opacity: 0.6; cursor: wait; }
