@@ -177,22 +177,13 @@ function buildTrCells(tr, row) {
       const mentor1Val    = mentor1Header    ? (row[mentor1Header]    || '').trim() : '';
       const needMentorVal = needMentorHeader ? (row[needMentorHeader] || '').trim().toUpperCase() : '';
 
-      if (isCICMember) {
-        if (mentor1Val) {
-          td.classList.add('has-reset-btn');
-          const resetBtn = document.createElement('button');
-          resetBtn.className = 'reset-client-btn';
-          resetBtn.textContent = 'Reset Mentor';
-          resetBtn.addEventListener('click', () => onResetClient(row, resetBtn));
-          td.appendChild(resetBtn);
-        } else if (needMentorVal === 'YES') {
-          td.classList.add('has-reset-btn');
-          const getMentorBtn = document.createElement('button');
-          getMentorBtn.className = 'get-mentor-btn';
-          getMentorBtn.textContent = 'Get Mentor';
-          getMentorBtn.addEventListener('click', () => onGetMentor(row, getMentorBtn, td));
-          td.appendChild(getMentorBtn);
-        }
+      if (isCICMember && needMentorVal === 'YES') {
+        td.classList.add('has-reset-btn');
+        const getMentorBtn = document.createElement('button');
+        getMentorBtn.className = 'get-mentor-btn';
+        getMentorBtn.textContent = 'Get Mentor';
+        getMentorBtn.addEventListener('click', () => onGetMentor(row, getMentorBtn, td));
+        td.appendChild(getMentorBtn);
       }
     } else if (DATE_COLUMNS.includes(headerNorm) && value) {
       td.textContent = formatDateValue(value);
@@ -320,106 +311,6 @@ async function onGetMentor(row, btn, td) {
   }
 }
 
-// ─── RESET CLIENT ─────────────────────────────────────────────────────────────
-function onResetClient(row, btn) {
-  const mentor1Header = allHeaders.find(h => h.toLowerCase().trim() === 'mentor 1');
-  const mentor1Name = mentor1Header ? (row[mentor1Header] || '').trim() : '';
-  if (!mentor1Name) return;
-
-  const td = btn.parentElement;
-
-  // Step 1: Replace button with Continue? / Cancel? confirmation
-  btn.remove();
-
-  const continueBtn = document.createElement('button');
-  continueBtn.className = 'reset-confirm-btn';
-  continueBtn.textContent = 'Continue?';
-
-  const cancelBtn = document.createElement('button');
-  cancelBtn.className = 'reset-cancel-btn';
-  cancelBtn.textContent = 'Cancel?';
-
-  cancelBtn.addEventListener('click', () => {
-    continueBtn.remove();
-    cancelBtn.remove();
-    const resetBtn = document.createElement('button');
-    resetBtn.className = 'reset-client-btn';
-    resetBtn.textContent = 'Reset Mentor';
-    resetBtn.addEventListener('click', () => onResetClient(row, resetBtn));
-    td.classList.add('has-reset-btn');
-    td.appendChild(resetBtn);
-  });
-
-  continueBtn.addEventListener('click', async () => {
-    continueBtn.remove();
-    cancelBtn.remove();
-
-    // Step 2: Show flashing "Resetting…" text
-    const resetSpan = document.createElement('span');
-    resetSpan.className = 'flashing';
-    resetSpan.textContent = 'Resetting…';
-    td.appendChild(resetSpan);
-
-    try {
-      // Fetch Mentor Assignments worksheet
-      const { headers: maHeaders, rows: maRows } = await fetchMentorAssignmentsData();
-
-      // Locate required columns (case-insensitive)
-      const findCol = name => maHeaders.findIndex(h => h.toLowerCase().trim() === name.toLowerCase());
-      const nameColIdx        = findCol('name');
-      const assignmentsColIdx = findCol('assignments');
-      const mentorAssignedIdx = findCol('mentor assigned');
-
-      if (nameColIdx < 0)        throw new Error(`Column "Name" not found. Available: ${maHeaders.join(', ')}`);
-      if (assignmentsColIdx < 0) throw new Error(`Column "Assignments" not found. Available: ${maHeaders.join(', ')}`);
-      if (mentorAssignedIdx < 0) throw new Error(`Column "Mentor Assigned" not found. Available: ${maHeaders.join(', ')}`);
-
-      // Find the mentor row matching Mentor 1 name
-      const nameHeader = maHeaders[nameColIdx];
-      const maRow = maRows.find(r => (r[nameHeader] || '').toLowerCase().trim() === mentor1Name.toLowerCase());
-      if (!maRow) throw new Error(`Mentor "${mentor1Name}" not found in Mentor Assignments`);
-
-      // Subtract 1 from Assignments (min 0)
-      const assignmentsHeader = maHeaders[assignmentsColIdx];
-      const currentVal = parseInt(maRow[assignmentsHeader], 10) || 0;
-      await updateMentorAssignmentsCell(maRow._rowIndex, colIndexToLetter(assignmentsColIdx), Math.max(0, currentVal - 1));
-
-      // Set Mentor Assigned to 0
-      await updateMentorAssignmentsCell(maRow._rowIndex, colIndexToLetter(mentorAssignedIdx), 0);
-
-      // Clear Mentor 1–5 in Client Tracking and set Need Mentor to YES
-      await clearClientMentorColumns(row._rowIndex, allHeaders);
-      const needMentorIdx = allHeaders.findIndex(h => h.toLowerCase().trim() === 'need mentor');
-      if (needMentorIdx >= 0) {
-        await updateClientCell(row._rowIndex, colIndexToLetter(needMentorIdx), 'YES');
-      }
-
-      // Step 3: Fetch updated row data and refresh only this row in the table
-      const rawCells = await fetchClientRow(row._rowIndex);
-      const updatedRow = { _rowIndex: row._rowIndex };
-      allHeaders.forEach((header, i) => {
-        updatedRow[header] = rawCells[i] !== undefined ? rawCells[i] : '';
-      });
-      const allRowsIdx = allRows.findIndex(r => r._rowIndex === row._rowIndex);
-      if (allRowsIdx >= 0) allRows[allRowsIdx] = updatedRow;
-      const tr = td.closest('tr');
-      buildTrCells(tr, updatedRow);
-
-    } catch (err) {
-      console.error('[ResetMentor] Failed:', err);
-      resetSpan.remove();
-      const resetBtn = document.createElement('button');
-      resetBtn.className = 'reset-client-btn';
-      resetBtn.textContent = 'Reset Mentor';
-      resetBtn.addEventListener('click', () => onResetClient(row, resetBtn));
-      td.appendChild(resetBtn);
-      showClientError(`Reset Mentor failed: ${err.message}`);
-    }
-  });
-
-  td.appendChild(continueBtn);
-  td.appendChild(cancelBtn);
-}
 
 // ─── ROW COUNT ────────────────────────────────────────────────────────────────
 function updateRowCount(shown, total) {

@@ -245,7 +245,7 @@ function renderAdminClients(clients) {
     const tr = document.createElement('tr');
     tr.className = i % 2 === 0 ? 'row-even' : 'row-odd';
 
-    // Name cell with optional EDIT button
+    // Name cell with optional EDIT / Reset Mentor buttons
     const nameTd = document.createElement('td');
     nameTd.className = 'admin-name-cell';
     if (singleResult) {
@@ -254,6 +254,12 @@ function renderAdminClients(clients) {
       editBtn.textContent = 'EDIT';
       editBtn.addEventListener('click', () => startAdminClientEdit(tr, row, editBtn));
       nameTd.appendChild(editBtn);
+
+      const resetBtn = document.createElement('button');
+      resetBtn.className = 'admin-reset-btn';
+      resetBtn.textContent = 'Reset Mentor';
+      resetBtn.addEventListener('click', () => startAdminClientReset(nameTd, row, resetBtn, editBtn));
+      nameTd.appendChild(resetBtn);
     }
     const nameSpan = document.createElement('span');
     nameSpan.textContent = col(row, NAME_KEYS) || '';
@@ -415,6 +421,74 @@ function startAdminClientEdit(tr, row, editBtn) {
       confirmBtn.disabled = false;
       cancelBtn.disabled = false;
       showAdminEditError(tr.querySelector('.admin-name-cell'), err.message);
+    }
+  });
+}
+
+// ─── CLIENT RESET MENTOR ──────────────────────────────────────────────────────
+function startAdminClientReset(nameTd, row, resetBtn, editBtn) {
+  resetBtn.classList.add('hidden');
+  editBtn.classList.add('hidden');
+
+  const continueBtn = document.createElement('button');
+  continueBtn.className = 'admin-confirm-btn';
+  continueBtn.textContent = 'Continue?';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'admin-cancel-btn';
+  cancelBtn.textContent = 'Cancel?';
+
+  nameTd.appendChild(continueBtn);
+  nameTd.appendChild(cancelBtn);
+
+  cancelBtn.addEventListener('click', () => {
+    searchAdminClients(document.getElementById('admin-client-search').value);
+  });
+
+  continueBtn.addEventListener('click', async () => {
+    continueBtn.disabled = true;
+    cancelBtn.disabled = true;
+    continueBtn.textContent = 'Resetting…';
+
+    try {
+      const mentor1H    = adminClientHeaders.find(h => h.toLowerCase().trim() === 'mentor 1');
+      const needMentorH = adminClientHeaders.find(h => h.toLowerCase().trim() === 'need mentor');
+      const mentor1Name = mentor1H ? (row[mentor1H] || '').trim() : '';
+
+      // Decrement mentor's assignment count and clear Mentor Assigned flag
+      if (mentor1Name) {
+        const assignData = await fetchMentorAssignmentsData();
+        const aHeaders   = assignData.headers;
+        const mentorRow  = assignData.rows.find(r => (col(r, NAME_KEYS) || '').trim().toLowerCase() === mentor1Name.toLowerCase());
+        if (mentorRow) {
+          const maIdx     = aHeaders.findIndex(h => h.toLowerCase().trim() === 'mentor assigned');
+          const assignIdx = aHeaders.findIndex(h => h.toLowerCase().trim() === 'assignments');
+          const saves = [];
+          if (maIdx >= 0)
+            saves.push(updateMentorAssignmentsCell(mentorRow._rowIndex, colIndexToLetter(maIdx), 0));
+          if (assignIdx >= 0) {
+            const current = parseInt(mentorRow[aHeaders[assignIdx]] || '0', 10);
+            saves.push(updateMentorAssignmentsCell(mentorRow._rowIndex, colIndexToLetter(assignIdx), Math.max(0, current - 1)));
+          }
+          await Promise.all(saves);
+        }
+      }
+
+      // Clear Mentor 1–5 from client row, then set Need Mentor = YES
+      await clearClientMentorColumns(row._rowIndex, adminClientHeaders);
+      if (needMentorH) {
+        const needMentorIdx = adminClientHeaders.indexOf(needMentorH);
+        if (needMentorIdx >= 0)
+          await updateClientCell(row._rowIndex, colIndexToLetter(needMentorIdx), 'YES');
+      }
+
+      await reloadAdminClients();
+    } catch (err) {
+      console.error('[AdminReset] Client reset failed:', err);
+      continueBtn.disabled = false;
+      cancelBtn.disabled = false;
+      continueBtn.textContent = 'Continue?';
+      showAdminEditError(nameTd, err.message);
     }
   });
 }
