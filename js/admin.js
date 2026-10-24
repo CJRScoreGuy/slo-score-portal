@@ -245,27 +245,32 @@ function renderAdminClients(clients) {
     const tr = document.createElement('tr');
     tr.className = i % 2 === 0 ? 'row-even' : 'row-odd';
 
-    // Name cell with optional EDIT / Reset Mentor buttons
+    // Name cell with optional EDIT / Reset Mentor / Get Mentor buttons
     const nameTd = document.createElement('td');
     nameTd.className = 'admin-name-cell';
     if (singleResult) {
+      const btnGroup = document.createElement('div');
+      btnGroup.className = 'admin-btn-group';
+
       const editBtn = document.createElement('button');
       editBtn.className = 'admin-edit-btn';
       editBtn.textContent = 'EDIT';
       editBtn.addEventListener('click', () => startAdminClientEdit(tr, row, editBtn));
-      nameTd.appendChild(editBtn);
+      btnGroup.appendChild(editBtn);
 
       const resetBtn = document.createElement('button');
       resetBtn.className = 'admin-reset-btn';
       resetBtn.textContent = 'Reset Mentor';
       resetBtn.addEventListener('click', () => startAdminClientReset(nameTd, row, resetBtn, editBtn));
-      nameTd.appendChild(resetBtn);
+      btnGroup.appendChild(resetBtn);
 
       const getMentorBtn = document.createElement('button');
       getMentorBtn.className = 'get-mentor-btn';
       getMentorBtn.textContent = 'Get Mentor';
       getMentorBtn.addEventListener('click', () => onAdminGetMentor(row, getMentorBtn, nameTd));
-      nameTd.appendChild(getMentorBtn);
+      btnGroup.appendChild(getMentorBtn);
+
+      nameTd.appendChild(btnGroup);
     }
     const nameSpan = document.createElement('span');
     nameSpan.textContent = col(row, NAME_KEYS) || '';
@@ -443,8 +448,8 @@ function startAdminClientReset(nameTd, row, resetBtn, editBtn) {
   cancelBtn.className = 'admin-cancel-btn';
   cancelBtn.textContent = 'Cancel?';
 
-  nameTd.appendChild(continueBtn);
-  nameTd.appendChild(cancelBtn);
+  resetBtn.parentNode.appendChild(continueBtn);
+  resetBtn.parentNode.appendChild(cancelBtn);
 
   cancelBtn.addEventListener('click', () => {
     searchAdminClients(document.getElementById('admin-client-search').value);
