@@ -12,8 +12,10 @@ const MENTOR_RANGE = `${MENTOR_SHEET_NAME}!A1:BE`;
 
 // ─── SHARED FETCH HELPER ─────────────────────────────────────────────────────
 async function apiFetch(url, options = {}) {
+  const isGet = !options.method || options.method === 'GET';
   let response = await fetch(url, {
     ...options,
+    cache: isGet ? 'no-store' : undefined,
     headers: { Authorization: `Bearer ${getAccessToken()}`, ...options.headers }
   });
   if (response.status === 401) {
