@@ -5,6 +5,7 @@ let allAdminClients = [];
 let adminStatusHeaders = [];
 let adminAssignmentsHeaders = [];
 let adminClientHeaders = [];
+let adminActiveMentorNames = [];
 let adminListenersWired = false;
 
 // ─── BUILD MENTOR LIST (shared by initial load and re-fetch after save) ───────
@@ -72,6 +73,16 @@ async function loadAdminTab() {
     ]);
 
     allAdminMentors = buildAdminMentorList(normalizeValues(engageResp.values || []), statusResp, assignmentsResp);
+
+    // Active mentors available for client assignment (Status = "Active with profile", Activity = "Any")
+    adminActiveMentorNames = statusResp.rows
+      .filter(row =>
+        (col(row, STATUS_KEYS)   || '').trim() === 'Active with profile' &&
+        (col(row, ACTIVITY_KEYS) || '').trim() === 'Any'
+      )
+      .map(row => (col(row, NAME_KEYS) || '').trim())
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b));
 
     adminClientHeaders = clientResp.headers;
     allAdminClients = clientResp.rows
@@ -210,6 +221,7 @@ function renderAdminClients(clients) {
   }
 
   const singleResult = clients.length === 1;
+  const mentor1H    = adminClientHeaders.find(h => h.toLowerCase().trim() === 'mentor 1');
   const respondedH  = adminClientHeaders.find(h => h.toLowerCase().trim() === 'responded');
   const needMentorH = adminClientHeaders.find(h => h.toLowerCase().trim() === 'need mentor');
   const responseH   = adminClientHeaders.find(h => h.toLowerCase().trim() === 'response');
@@ -219,7 +231,7 @@ function renderAdminClients(clients) {
 
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
-  ['Name', 'Email', 'Phone', 'Date Responded', 'Need Mentor', 'Response']
+  ['Name', 'Email', 'Phone', 'Lead Mentor', 'Date Responded', 'Need Mentor', 'Response']
     .forEach(label => {
       const th = document.createElement('th');
       th.textContent = label;
@@ -256,11 +268,13 @@ function renderAdminClients(clients) {
     });
 
     // Editable cells
+    const mentor1Val    = mentor1H    ? (row[mentor1H]                || '') : '';
     const respondedVal  = respondedH  ? formatDateValue(row[respondedH]  || '') : '';
     const needMentorVal = needMentorH ? (row[needMentorH] || '')                : '';
     const responseVal   = responseH   ? (row[responseH]   || '')                : '';
 
     [
+      { key: 'mentor1',    val: mentor1Val },
       { key: 'responded',  val: respondedVal },
       { key: 'needMentor', val: needMentorVal },
       { key: 'response',   val: responseVal }
@@ -353,9 +367,12 @@ function startAdminClientEdit(tr, row, editBtn) {
   editBtn.parentNode.appendChild(confirmBtn);
   editBtn.parentNode.appendChild(cancelBtn);
 
+  const mentor1H    = adminClientHeaders.find(h => h.toLowerCase().trim() === 'mentor 1');
   const respondedH  = adminClientHeaders.find(h => h.toLowerCase().trim() === 'responded');
   const needMentorH = adminClientHeaders.find(h => h.toLowerCase().trim() === 'need mentor');
   const responseH   = adminClientHeaders.find(h => h.toLowerCase().trim() === 'response');
+
+  const mentor1Sel = makeAdminSelect(adminActiveMentorNames, mentor1H ? (row[mentor1H] || '') : '');
 
   const respondedInp = document.createElement('input');
   respondedInp.type = 'text';
@@ -370,7 +387,7 @@ function startAdminClientEdit(tr, row, editBtn) {
   responseArea.className = 'admin-edit-textarea';
   responseArea.rows = 3;
 
-  const controls = { responded: respondedInp, needMentor: needMentorSel, response: responseArea };
+  const controls = { mentor1: mentor1Sel, responded: respondedInp, needMentor: needMentorSel, response: responseArea };
 
   tr.querySelectorAll('[data-edit-key]').forEach(td => {
     const ctrl = controls[td.dataset.editKey];
@@ -386,6 +403,7 @@ function startAdminClientEdit(tr, row, editBtn) {
     cancelBtn.disabled = true;
     try {
       await saveAdminClientEdits(row, {
+        mentor1:    mentor1Sel.value,
         responded:  respondedInp.value.trim(),
         needMentor: needMentorSel.value,
         response:   responseArea.value
@@ -461,11 +479,14 @@ async function saveAdminMentorEdits(m, values) {
 async function saveAdminClientEdits(row, values) {
   const findCol = name => adminClientHeaders.findIndex(h => h.toLowerCase().trim() === name);
 
+  const mentor1Idx    = findCol('mentor 1');
   const respondedIdx  = findCol('responded');
   const needMentorIdx = findCol('need mentor');
   const responseIdx   = findCol('response');
 
   const saves = [];
+  if (mentor1Idx >= 0)
+    saves.push(updateClientCell(row._rowIndex, colIndexToLetter(mentor1Idx), values.mentor1));
   if (respondedIdx >= 0)
     saves.push(updateClientCell(row._rowIndex, colIndexToLetter(respondedIdx), values.responded));
   if (needMentorIdx >= 0)
