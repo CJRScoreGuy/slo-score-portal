@@ -269,7 +269,7 @@ function renderAdminClients(clients) {
 
     // Editable cells
     const mentor1Val    = mentor1H    ? (row[mentor1H]                || '') : '';
-    const respondedVal  = respondedH  ? formatDateValue(row[respondedH]  || '') : '';
+    const respondedVal  = respondedH  ? (row[respondedH] || '') : '';
     const needMentorVal = needMentorH ? (row[needMentorH] || '')                : '';
     const responseVal   = responseH   ? (row[responseH]   || '')                : '';
 
@@ -377,7 +377,7 @@ function startAdminClientEdit(tr, row, editBtn) {
 
   const respondedInp = document.createElement('input');
   respondedInp.type = 'text';
-  respondedInp.value = respondedH ? formatDateValue(row[respondedH] || '') : '';
+  respondedInp.value = respondedH ? (row[respondedH] || '') : '';
   respondedInp.className = 'admin-edit-input';
   respondedInp.placeholder = 'e.g. October 24, 2026';
 
