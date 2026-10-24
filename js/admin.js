@@ -282,6 +282,7 @@ function renderAdminClients(clients) {
       const td = document.createElement('td');
       td.dataset.editKey = key;
       td.textContent = val;
+      if (key === 'response') td.className = 'admin-response-cell';
       tr.appendChild(td);
     });
 
