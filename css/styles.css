@@ -1154,6 +1154,18 @@ button {
   box-sizing: border-box;
 }
 
+.admin-edit-textarea {
+  font-size: 14px;
+  padding: 3px 6px;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  background: #fff;
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  font-family: inherit;
+}
+
 .admin-edit-error {
   display: block;
   font-size: 12px;
