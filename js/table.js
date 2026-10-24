@@ -172,19 +172,6 @@ function buildTrCells(tr, row) {
 
     if (headerNorm === 'name') {
       td.textContent = value;
-      const mentor1Header    = allHeaders.find(h => h.toLowerCase().trim() === 'mentor 1');
-      const needMentorHeader = allHeaders.find(h => h.toLowerCase().trim() === 'need mentor');
-      const mentor1Val    = mentor1Header    ? (row[mentor1Header]    || '').trim() : '';
-      const needMentorVal = needMentorHeader ? (row[needMentorHeader] || '').trim().toUpperCase() : '';
-
-      if (isCICMember && needMentorVal === 'YES') {
-        td.classList.add('has-reset-btn');
-        const getMentorBtn = document.createElement('button');
-        getMentorBtn.className = 'get-mentor-btn';
-        getMentorBtn.textContent = 'Get Mentor';
-        getMentorBtn.addEventListener('click', () => onGetMentor(row, getMentorBtn, td));
-        td.appendChild(getMentorBtn);
-      }
     } else if (DATE_COLUMNS.includes(headerNorm) && value) {
       td.textContent = formatDateValue(value);
     } else if (EXPANDABLE_COLUMNS.includes(headerNorm) && value.length > 0) {
@@ -246,71 +233,6 @@ function renderRows(rows) {
   }
   table.appendChild(tbody);
 }
-
-// ─── GET MENTOR ───────────────────────────────────────────────────────────────
-async function onGetMentor(row, btn, td) {
-  btn.disabled = true;
-  btn.textContent = 'Getting a mentor';
-  btn.classList.add('flashing');
-
-  // Resolve Mentor 1 column index once so both try/catch blocks can use it.
-  const mentor1Header = allHeaders.find(h => h.toLowerCase().trim() === 'mentor 1');
-  const mentor1ColIdx = mentor1Header ? allHeaders.indexOf(mentor1Header) : -1;
-
-  // Write "UPDATING WIP" to Mentor 1 (col J) before calling the script to
-  // prevent concurrent updates if two users click the button at the same time.
-  try {
-    if (mentor1ColIdx < 0) throw new Error('"Mentor 1" column not found in sheet headers');
-    await updateClientTrackingCell(row._rowIndex, colIndexToLetter(mentor1ColIdx), 'UPDATING WIP');
-  } catch (err) {
-    console.error('[GetMentor] Failed to write UPDATING WIP:', err);
-    btn.disabled = false;
-    btn.textContent = 'Get Mentor';
-    btn.classList.remove('flashing');
-    showClientError(`Could not reserve row for update: ${err.message}`);
-    return;
-  }
-
-  try {
-    const emailHeader = allHeaders.find(h => h.toLowerCase().trim() === 'email');
-    const clientEmail = emailHeader ? (row[emailHeader] || '').trim() : '';
-    if (!clientEmail) throw new Error('No email address found for this client row');
-    const result = await runGetMentorScript(clientEmail);
-
-    // Check for API-level error
-    if (result.error) {
-      const errMsg = result.error.details?.[0]?.errorMessage
-        || result.error.message
-        || 'Script error';
-      throw new Error(errMsg);
-    }
-
-    // Check for script-returned error string
-    const scriptResult = result.response?.result;
-    if (typeof scriptResult === 'string' && scriptResult.toLowerCase().startsWith('error')) {
-      throw new Error(scriptResult);
-    }
-
-    // Success — refresh the table to show updated mentor columns
-    await loadClientData();
-
-  } catch (err) {
-    console.error('[GetMentor] Script failed:', err);
-
-    // Clear "UPDATING WIP" from Mentor 1 so the row is fully reset.
-    if (mentor1ColIdx >= 0) {
-      await updateClientTrackingCell(row._rowIndex, colIndexToLetter(mentor1ColIdx), '').catch(
-        e => console.error('[GetMentor] Failed to clear UPDATING WIP after script error:', e)
-      );
-    }
-
-    btn.disabled = false;
-    btn.textContent = 'Get Mentor';
-    btn.classList.remove('flashing');
-    showClientError(`Get Mentor failed: ${err.message}`);
-  }
-}
-
 
 // ─── ROW COUNT ────────────────────────────────────────────────────────────────
 function updateRowCount(shown, total) {

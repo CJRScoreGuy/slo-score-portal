@@ -260,6 +260,12 @@ function renderAdminClients(clients) {
       resetBtn.textContent = 'Reset Mentor';
       resetBtn.addEventListener('click', () => startAdminClientReset(nameTd, row, resetBtn, editBtn));
       nameTd.appendChild(resetBtn);
+
+      const getMentorBtn = document.createElement('button');
+      getMentorBtn.className = 'get-mentor-btn';
+      getMentorBtn.textContent = 'Get Mentor';
+      getMentorBtn.addEventListener('click', () => onAdminGetMentor(row, getMentorBtn, nameTd));
+      nameTd.appendChild(getMentorBtn);
     }
     const nameSpan = document.createElement('span');
     nameSpan.textContent = col(row, NAME_KEYS) || '';
@@ -491,6 +497,61 @@ function startAdminClientReset(nameTd, row, resetBtn, editBtn) {
       showAdminEditError(nameTd, err.message);
     }
   });
+}
+
+// ─── ADMIN GET MENTOR ─────────────────────────────────────────────────────────
+async function onAdminGetMentor(row, btn, nameTd) {
+  btn.disabled = true;
+  btn.textContent = 'Getting a mentor';
+  btn.classList.add('flashing');
+
+  const mentor1H      = adminClientHeaders.find(h => h.toLowerCase().trim() === 'mentor 1');
+  const mentor1ColIdx = mentor1H ? adminClientHeaders.indexOf(mentor1H) : -1;
+
+  // Reserve the row to prevent concurrent updates
+  try {
+    if (mentor1ColIdx < 0) throw new Error('"Mentor 1" column not found in sheet headers');
+    await updateClientTrackingCell(row._rowIndex, colIndexToLetter(mentor1ColIdx), 'UPDATING WIP');
+  } catch (err) {
+    console.error('[AdminGetMentor] Failed to write UPDATING WIP:', err);
+    btn.disabled = false;
+    btn.textContent = 'Get Mentor';
+    btn.classList.remove('flashing');
+    showAdminEditError(nameTd, `Could not reserve row for update: ${err.message}`);
+    return;
+  }
+
+  try {
+    const emailH      = adminClientHeaders.find(h => h.toLowerCase().trim() === 'email');
+    const clientEmail = emailH ? (row[emailH] || '').trim() : '';
+    if (!clientEmail) throw new Error('No email address found for this client row');
+    const result = await runGetMentorScript(clientEmail);
+
+    if (result.error) {
+      const errMsg = result.error.details?.[0]?.errorMessage || result.error.message || 'Script error';
+      throw new Error(errMsg);
+    }
+
+    const scriptResult = result.response?.result;
+    if (typeof scriptResult === 'string' && scriptResult.toLowerCase().startsWith('error')) {
+      throw new Error(scriptResult);
+    }
+
+    await reloadAdminClients();
+  } catch (err) {
+    console.error('[AdminGetMentor] Script failed:', err);
+
+    if (mentor1ColIdx >= 0) {
+      await updateClientTrackingCell(row._rowIndex, colIndexToLetter(mentor1ColIdx), '').catch(
+        e => console.error('[AdminGetMentor] Failed to clear UPDATING WIP:', e)
+      );
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Get Mentor';
+    btn.classList.remove('flashing');
+    showAdminEditError(nameTd, `Get Mentor failed: ${err.message}`);
+  }
 }
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
