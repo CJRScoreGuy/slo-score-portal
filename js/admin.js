@@ -197,7 +197,7 @@ function startAdminMentorEdit(tr, m, editBtn) {
   // Replace each editable cell with the appropriate control
   const maVal = m.mentorAssigned === '1' ? 'True' : 'False';
   const controls = {
-    status:         makeAdminSelect(['Active with profile', 'Resigned', 'Inactive'], m.mentorStatus),
+    status:         makeAdminSelect(['Active with profile', 'Resigned', 'Inactive', 'Paused'], m.mentorStatus),
     activity:       makeAdminSelect(['Any', 'Co-mentor', 'SME'], m.clientEngagement),
     mentorAssigned: makeAdminSelect(['True', 'False'], maVal),
     assignments:    (() => {
