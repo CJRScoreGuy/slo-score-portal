@@ -1030,6 +1030,12 @@ button {
   white-space: nowrap;
 }
 
+.admin-section-header .mi-count {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1a73e8;
+}
+
 .admin-mentor-list {
   overflow-x: auto;
 }
