@@ -222,7 +222,7 @@ function renderAdminClients(clients) {
 
   const singleResult = clients.length === 1;
   const mentor1H    = adminClientHeaders.find(h => h.toLowerCase().trim() === 'mentor 1');
-  const respondedH  = adminClientHeaders.find(h => h.toLowerCase().trim() === 'responded');
+  const respondedH  = adminClientHeaders.find(h => { const n = h.toLowerCase().trim(); return n === 'responded' || n === 'date responded'; });
   const needMentorH = adminClientHeaders.find(h => h.toLowerCase().trim() === 'need mentor');
   const responseH   = adminClientHeaders.find(h => h.toLowerCase().trim() === 'response');
 
@@ -375,7 +375,7 @@ function startAdminClientEdit(tr, row, editBtn) {
   editBtn.parentNode.appendChild(cancelBtn);
 
   const mentor1H    = adminClientHeaders.find(h => h.toLowerCase().trim() === 'mentor 1');
-  const respondedH  = adminClientHeaders.find(h => h.toLowerCase().trim() === 'responded');
+  const respondedH  = adminClientHeaders.find(h => { const n = h.toLowerCase().trim(); return n === 'responded' || n === 'date responded'; });
   const needMentorH = adminClientHeaders.find(h => h.toLowerCase().trim() === 'need mentor');
   const responseH   = adminClientHeaders.find(h => h.toLowerCase().trim() === 'response');
 
@@ -555,7 +555,7 @@ async function saveAdminClientEdits(row, values) {
   const findCol = name => adminClientHeaders.findIndex(h => h.toLowerCase().trim() === name);
 
   const mentor1Idx    = findCol('mentor 1');
-  const respondedIdx  = findCol('responded');
+  const respondedIdx  = adminClientHeaders.findIndex(h => { const n = h.toLowerCase().trim(); return n === 'responded' || n === 'date responded'; });
   const needMentorIdx = findCol('need mentor');
   const responseIdx   = findCol('response');
 
