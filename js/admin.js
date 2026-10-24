@@ -172,11 +172,14 @@ function renderAdminMentors(mentors) {
     const nameTd = document.createElement('td');
     nameTd.className = 'admin-name-cell';
     if (singleResult) {
+      const btnGroup = document.createElement('div');
+      btnGroup.className = 'admin-btn-group';
       const editBtn = document.createElement('button');
       editBtn.className = 'admin-edit-btn';
       editBtn.textContent = 'EDIT';
       editBtn.addEventListener('click', () => startAdminMentorEdit(tr, m, editBtn));
-      nameTd.appendChild(editBtn);
+      btnGroup.appendChild(editBtn);
+      nameTd.appendChild(btnGroup);
     }
     const nameSpan = document.createElement('span');
     nameSpan.textContent = m.name;
