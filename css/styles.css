@@ -270,7 +270,8 @@ button {
   overflow: hidden;
 }
 
-.tab-panel[data-tab="mentor-info"] {
+.tab-panel[data-tab="mentor-info"],
+.tab-panel[data-tab="administration"] {
   overflow-y: auto;
   overflow-x: hidden;
 }
