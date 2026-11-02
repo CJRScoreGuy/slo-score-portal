@@ -393,7 +393,7 @@ function startAdminClientEdit(tr, row, editBtn) {
   const needMentorH = adminClientHeaders.find(h => h.toLowerCase().trim() === 'need mentor');
   const responseH   = adminClientHeaders.find(h => h.toLowerCase().trim() === 'response');
 
-  const mentor1Sel = makeAdminSelect(adminActiveMentorNames, mentor1H ? (row[mentor1H] || '') : '');
+  const mentor1Sel = makeAdminSelect(['', ...adminActiveMentorNames], mentor1H ? (row[mentor1H] || '') : '');
 
   const respondedInp = document.createElement('input');
   respondedInp.type = 'text';
