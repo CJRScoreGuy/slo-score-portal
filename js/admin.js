@@ -2,6 +2,7 @@
 
 let allAdminMentors = [];
 let allAdminClients = [];
+let adminEngageHeaders = [];
 let adminStatusHeaders = [];
 let adminAssignmentsHeaders = [];
 let adminClientHeaders = [];
@@ -10,6 +11,7 @@ let adminListenersWired = false;
 
 // ─── BUILD MENTOR LIST (shared by initial load and re-fetch after save) ───────
 function buildAdminMentorList(engage, statusResp, assignmentsResp) {
+  adminEngageHeaders      = engage.headers;
   adminStatusHeaders      = statusResp.headers;
   adminAssignmentsHeaders = assignmentsResp.headers;
 
@@ -33,6 +35,7 @@ function buildAdminMentorList(engage, statusResp, assignmentsResp) {
       const m = buildMentorObj(row, sRow, aRow);
       m.mentorAssigned      = col(aRow, ['mentor assigned']) || '';
       m.assignments         = col(aRow, ['assignments'])     || '';
+      m.engageRowIndex      = row._rowIndex;
       m.statusRowIndex      = sRow._rowIndex;
       m.assignmentsRowIndex = aRow._rowIndex;
       m.adminSearchText     = [m.name, m.email, m.phone].join(' ').toLowerCase();
@@ -186,8 +189,12 @@ function renderAdminMentors(mentors) {
     nameTd.appendChild(nameSpan);
     tr.appendChild(nameTd);
 
-    [m.email, m.phone].forEach(val => {
+    [
+      { key: 'email', val: m.email },
+      { key: 'phone', val: m.phone }
+    ].forEach(({ key, val }) => {
       const td = document.createElement('td');
+      td.dataset.editKey = key;
       td.textContent = val || '';
       tr.appendChild(td);
     });
@@ -280,9 +287,13 @@ function renderAdminClients(clients) {
     nameTd.appendChild(nameSpan);
     tr.appendChild(nameTd);
 
-    // Read-only: email, phone
-    [col(row, EMAIL_KEYS), col(row, PHONE_KEYS)].forEach(val => {
+    // Editable: email, phone
+    [
+      { key: 'clientEmail', val: col(row, EMAIL_KEYS) },
+      { key: 'clientPhone', val: col(row, PHONE_KEYS) }
+    ].forEach(({ key, val }) => {
       const td = document.createElement('td');
+      td.dataset.editKey = key;
       td.textContent = val || '';
       tr.appendChild(td);
     });
@@ -328,7 +339,16 @@ function startAdminMentorEdit(tr, m, editBtn) {
   editBtn.parentNode.appendChild(cancelBtn);
 
   const maVal = m.mentorAssigned === '1' ? 'True' : 'False';
+  const mkText = val => {
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.value = val || '';
+    inp.className = 'admin-edit-input';
+    return inp;
+  };
   const controls = {
+    email:          mkText(m.email),
+    phone:          mkText(m.phone),
     status:         makeAdminSelect(['Active with profile', 'Resigned', 'Inactive', 'Paused'], m.mentorStatus),
     activity:       makeAdminSelect(['Any', 'Co-mentor', 'SME'], m.clientEngagement),
     mentorAssigned: makeAdminSelect(['True', 'False'], maVal),
@@ -357,6 +377,8 @@ function startAdminMentorEdit(tr, m, editBtn) {
     cancelBtn.disabled = true;
     try {
       await saveAdminMentorEdits(m, {
+        email:          controls.email.value.trim(),
+        phone:          controls.phone.value.trim(),
         status:         controls.status.value,
         activity:       controls.activity.value,
         mentorAssigned: controls.mentorAssigned.value === 'True' ? 1 : 0,
@@ -393,6 +415,19 @@ function startAdminClientEdit(tr, row, editBtn) {
   const needMentorH = adminClientHeaders.find(h => h.toLowerCase().trim() === 'need mentor');
   const responseH   = adminClientHeaders.find(h => h.toLowerCase().trim() === 'response');
 
+  const emailH = adminClientHeaders.find(h => EMAIL_KEYS.some(k => k.toLowerCase() === h.toLowerCase().trim()));
+  const phoneH = adminClientHeaders.find(h => PHONE_KEYS.some(k => k.toLowerCase() === h.toLowerCase().trim()));
+
+  const clientEmailInp = document.createElement('input');
+  clientEmailInp.type = 'text';
+  clientEmailInp.value = emailH ? (row[emailH] || '') : '';
+  clientEmailInp.className = 'admin-edit-input';
+
+  const clientPhoneInp = document.createElement('input');
+  clientPhoneInp.type = 'text';
+  clientPhoneInp.value = phoneH ? (row[phoneH] || '') : '';
+  clientPhoneInp.className = 'admin-edit-input';
+
   const mentor1Sel = makeAdminSelect(['', ...adminActiveMentorNames], mentor1H ? (row[mentor1H] || '') : '');
 
   const respondedInp = document.createElement('input');
@@ -408,7 +443,7 @@ function startAdminClientEdit(tr, row, editBtn) {
   responseArea.className = 'admin-edit-textarea';
   responseArea.rows = 3;
 
-  const controls = { mentor1: mentor1Sel, responded: respondedInp, needMentor: needMentorSel, response: responseArea };
+  const controls = { clientEmail: clientEmailInp, clientPhone: clientPhoneInp, mentor1: mentor1Sel, responded: respondedInp, needMentor: needMentorSel, response: responseArea };
 
   tr.querySelectorAll('[data-edit-key]').forEach(td => {
     const ctrl = controls[td.dataset.editKey];
@@ -424,10 +459,12 @@ function startAdminClientEdit(tr, row, editBtn) {
     cancelBtn.disabled = true;
     try {
       await saveAdminClientEdits(row, {
-        mentor1:    mentor1Sel.value,
-        responded:  respondedInp.value.trim(),
-        needMentor: needMentorSel.value,
-        response:   responseArea.value
+        clientEmail: clientEmailInp.value.trim(),
+        clientPhone: clientPhoneInp.value.trim(),
+        mentor1:     mentor1Sel.value,
+        responded:   respondedInp.value.trim(),
+        needMentor:  needMentorSel.value,
+        response:    responseArea.value
       });
       await reloadAdminClients();
     } catch (err) {
@@ -600,7 +637,19 @@ async function saveAdminMentorEdits(m, values) {
   const assignColIdx   = findInAssign(['assignments']);
   const resetColIdx    = findInAssign(MENTOR_RESET_KEYS);
 
+  const findInEngage = keys => adminEngageHeaders.findIndex(h =>
+    keys.some(k => k.toLowerCase() === h.toLowerCase().trim())
+  );
+  const emailEngageIdx = findInEngage(EMAIL_KEYS);
+  const phoneEngageIdx = findInEngage(PHONE_KEYS);
+
   const saves = [];
+  if (m.engageRowIndex !== undefined) {
+    if (emailEngageIdx >= 0)
+      saves.push(updateEngageCell(m.engageRowIndex, colIndexToLetter(emailEngageIdx), values.email));
+    if (phoneEngageIdx >= 0)
+      saves.push(updateEngageCell(m.engageRowIndex, colIndexToLetter(phoneEngageIdx), values.phone));
+  }
   if (m.statusRowIndex !== undefined) {
     if (statusColIdx >= 0)
       saves.push(updateMentorCell(m.statusRowIndex, statusColIdx, values.status));
@@ -621,13 +670,20 @@ async function saveAdminMentorEdits(m, values) {
 // ─── SAVE CLIENT EDITS ────────────────────────────────────────────────────────
 async function saveAdminClientEdits(row, values) {
   const findCol = name => adminClientHeaders.findIndex(h => h.toLowerCase().trim() === name);
+  const findColByKeys = keys => adminClientHeaders.findIndex(h => keys.some(k => k.toLowerCase() === h.toLowerCase().trim()));
 
+  const emailIdx      = findColByKeys(EMAIL_KEYS);
+  const phoneIdx      = findColByKeys(PHONE_KEYS);
   const mentor1Idx    = findCol('mentor 1');
   const respondedIdx  = adminClientHeaders.findIndex(h => { const n = h.toLowerCase().trim(); return n === 'responded' || n === 'date responded'; });
   const needMentorIdx = findCol('need mentor');
   const responseIdx   = findCol('response');
 
   const saves = [];
+  if (emailIdx >= 0)
+    saves.push(updateClientCell(row._rowIndex, colIndexToLetter(emailIdx), values.clientEmail));
+  if (phoneIdx >= 0)
+    saves.push(updateClientCell(row._rowIndex, colIndexToLetter(phoneIdx), values.clientPhone));
   if (mentor1Idx >= 0)
     saves.push(updateClientCell(row._rowIndex, colIndexToLetter(mentor1Idx), values.mentor1));
   if (respondedIdx >= 0)

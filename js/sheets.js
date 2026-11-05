@@ -73,6 +73,18 @@ async function fetchMentorRow(dataRowIndex) {
   return (data.values || [[]])[0] || [];
 }
 
+// ─── WRITE SINGLE ENGAGE CELL ─────────────────────────────────────────────────
+async function updateEngageCell(rowIndex, colLetter, value) {
+  const sheetRow = rowIndex + 2;
+  const range = encodeURIComponent(`Engage!${colLetter}${sheetRow}`);
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${MENTOR_SPREADSHEET_ID}/values/${range}?valueInputOption=RAW`;
+  await apiFetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ values: [[value]] })
+  });
+}
+
 // ─── WRITE SINGLE MENTOR CELL ─────────────────────────────────────────────────
 // rowIndex: 0-based data row index (sheet row = rowIndex + 2)
 // colIndex: 0-based column index
